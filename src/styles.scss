@@ -1,1 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+}
+
+@import url(../src/assets/scss/common.scss);
+@import url(../src/assets/scss/prime-ng.scss);
+@import "primeicons/primeicons.css";

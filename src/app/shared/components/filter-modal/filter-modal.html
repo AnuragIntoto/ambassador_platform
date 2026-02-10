@@ -1,0 +1,49 @@
+<p-dialog
+  [header]="title()"
+  [visible]="visible()"
+  (visibleChange)="onVisibleChange($event)"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '512px', maxWidth: '95vw' }"
+  styleClass="filter-modal-dialog"
+  (onHide)="close.emit()"
+>
+  <div class="filter-modal-content">
+    @if (searchPlaceholder()) {
+      <div class="filter-modal-search">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            [placeholder]="searchPlaceholder()"
+            (ngModelChange)="search.set($event)"
+            [ngModel]="search()"
+            class="filter-search-input"
+          />
+        </span>
+      </div>
+    }
+    <div class="filter-modal-list">
+      @for (item of filteredItems(); track item.id) {
+        <label class="filter-modal-option" [attr.for]="'filter-' + item.id">
+          <p-checkbox
+            [inputId]="'filter-' + item.id"
+            [ngModel]="isChecked(item.id)"
+            (ngModelChange)="toggle(item.id, $event)"
+            [binary]="true"
+          />
+          <span class="filter-option-label">{{ item.label }}</span>
+        </label>
+      }
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="filter-modal-footer">
+      <p-button label="Clear All" severity="secondary" [outlined]="true" (click)="clearAll()" />
+      <p-button label="Apply Filters" (click)="onApply()" />
+    </div>
+  </ng-template>
+</p-dialog>

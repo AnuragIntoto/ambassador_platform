@@ -1,0 +1,59 @@
+@if (visible()) {
+  <div class="login-modal-backdrop" (click)="onBackdropClick($event)">
+    <div class="login-modal" role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
+      <!-- IMAGE PLACEHOLDER - left panel 705x590, replace with actual asset -->
+      <div class="login-modal-image"></div>
+      <div class="login-modal-form">
+        <div class="login-modal-header">
+          <h2 id="login-modal-title" class="login-modal-welcome">Welcome</h2>
+          <p class="login-modal-subtitle">
+            @if (mode() === 'login') {
+              Log In to Intoto to continue to Intoto Dev.
+            } @else {
+              Sign Up to Intoto to continue to Intoto Dev.
+            }
+          </p>
+        </div>
+        <div class="login-modal-body">
+          <div class="login-modal-fields">
+            <div class="login-modal-input-wrap">
+              <input
+                [type]="mode() === 'login' ? 'email' : 'text'"
+                pInputText
+                [ngModel]="mode() === 'login' ? email : name"
+                (ngModelChange)="mode() === 'login' ? (email = $event) : (name = $event)"
+                [placeholder]="mode() === 'login' ? 'Email' : 'Name'"
+                class="login-modal-input"
+              />
+            </div>
+            @if (mode() === 'signup') {
+              <div class="login-modal-options">
+                <label class="login-modal-checkbox">
+                  <p-checkbox [(ngModel)]="rememberMe" [binary]="true" inputId="remember" />
+                  <span class="login-modal-checkbox-label">Remember Me</span>
+                </label>
+                <a href="#" class="login-modal-forgot" (click)="$event.preventDefault()">Forget Password?</a>
+              </div>
+            } @else {
+              <div class="login-modal-options login-modal-options-single">
+                <a href="#" class="login-modal-forgot" (click)="$event.preventDefault()">Forget Password?</a>
+              </div>
+            }
+          </div>
+          <button type="button" class="login-modal-continue" (click)="onContinue()">
+            Continue
+          </button>
+          <p class="login-modal-switch">
+            @if (mode() === 'login') {
+              Don't have an account?
+              <a href="#" (click)="onSwitchToSignup(); $event.preventDefault()">Sign Up</a>
+            } @else {
+              Already have an account?
+              <a href="#" (click)="onSwitchToLogin(); $event.preventDefault()">Log in</a>
+            }
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+}

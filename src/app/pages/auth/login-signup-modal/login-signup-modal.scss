@@ -1,0 +1,201 @@
+/* Figma design tokens - pixel-perfect from node 1-8838, 1-8785 */
+$font-family: 'Inter', sans-serif;
+$primary-color: #ffffff;
+$secondary-color: #02a3ca;
+$accent-color: #000000;
+$stroke-color: #c4c4c4;
+$large-regular: 400 16px / 1.25 $font-family;
+$large-medium: 500 16px / 1.21 $font-family;
+$large-bold: 700 16px / 1.2 $font-family;
+$welcome-style: 700 36px / 1.2 $font-family;
+
+.login-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.login-modal {
+  display: flex;
+  width: 1313px;
+  max-width: 100%;
+  height: 590px;
+  max-height: calc(100vh - 40px);
+  background-color: $primary-color;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* IMAGE PLACEHOLDER - 705x590, replace with actual asset */
+.login-modal-image {
+  width: 705px;
+  min-width: 705px;
+  height: 590px;
+  background-color: #f4f6f8;
+  flex-shrink: 0;
+
+  @media (max-width: 1200px) {
+    display: none;
+  }
+}
+
+.login-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 105px 96px 105px 96px;
+  width: 510px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+
+  @media (max-width: 600px) {
+    width: 100%;
+    padding: 40px 24px;
+  }
+}
+
+.login-modal-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.login-modal-welcome {
+  font: $welcome-style;
+  color: $accent-color;
+  margin: 0;
+  text-align: center;
+}
+
+.login-modal-subtitle {
+  font: $large-regular;
+  color: $accent-color;
+  margin: 0;
+  text-align: center;
+}
+
+.login-modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.login-modal-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.login-modal-input-wrap {
+  width: 100%;
+}
+
+.login-modal-input {
+  width: 100%;
+  height: 58px;
+  padding: 21px 24px;
+  border: 1px solid $stroke-color;
+  border-radius: 8px;
+  font: $large-regular;
+  color: $accent-color;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: #7c7c7c;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $secondary-color;
+  }
+}
+
+.login-modal-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 132px;
+}
+
+.login-modal-options-single {
+  justify-content: flex-end;
+}
+
+.login-modal-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.login-modal-checkbox-label {
+  font: $large-medium;
+  color: $accent-color;
+}
+
+.login-modal-forgot {
+  font: $large-medium;
+  color: $secondary-color;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.login-modal-continue {
+  width: 100%;
+  height: 58px;
+  padding: 12px 154px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: $secondary-color;
+  border: none;
+  border-radius: 8px;
+  font: $large-bold;
+  color: $primary-color;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.login-modal-switch {
+  font: $large-medium;
+  color: $accent-color;
+  margin: 0;
+
+  a {
+    color: $secondary-color;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+/* PrimeNG input override */
+::ng-deep .login-modal-input-wrap .p-inputtext {
+  width: 100% !important;
+  height: 58px !important;
+  padding: 21px 24px !important;
+  border: 1px solid $stroke-color !important;
+  border-radius: 8px !important;
+  font: $large-regular !important;
+}

@@ -1,0 +1,30 @@
+.p-accordionpanel:not(.p-accordionpanel-active):not(.p-disabled) > .p-accordionheader:hover {
+  background-color: #ffffff !important;
+}
+
+.p-accordionpanel:not(.p-disabled).p-accordionpanel-active > .p-accordionheader {
+  background-color: #ffffff !important;
+}
+
+.faq-answer-container .p-accordioncontent-content {
+  background-color: #ffffff !important;
+}
+
+/* Fix: Ripple's overflow:hidden clips the toggle icon on hover */
+.faq-section .p-accordionheader.p-ripple {
+  overflow: visible !important;
+}
+.faq-section .p-accordionheader .p-accordionheader-toggle-icon,
+.faq-section .p-accordionheader [class*='accordionheader-toggle-icon'],
+.faq-section .p-accordionheader svg[data-p-icon] {
+  position: relative !important;
+  z-index: 2 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.p-accordionpanel.p-accordionpanel-active {
+  .p-accordioncontent-wrapper {
+    padding-bottom: 16px;
+  }
+}

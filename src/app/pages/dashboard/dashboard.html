@@ -1,0 +1,204 @@
+<div class="dashboard">
+  @if (platformData() && !isAuthenticated()) {
+    <div
+      class="auth-overlay"
+      (click)="onPageClickToLogin()"
+      role="button"
+      tabindex="0"
+      (keydown.enter)="onPageClickToLogin()"
+      aria-label="Click anywhere to sign in"
+    ></div>
+  }
+  @if (loading()) {
+    <div class="loading-state">
+      <app-loader />
+      <p class="loading-label">Loading...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-state">{{ error() }}</div>
+  } @else if (platformData(); as data) {
+    <!-- Header Section -->
+    <header class="dashboard-header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1 class="page-title">{{ header()?.title ?? 'Student Ambassadors' }}</h1>
+          <p class="page-description">{{ header()?.message ?? '' }}</p>
+        </div>
+        <div class="header-right">
+          <a href="#" class="chat-icon-link" aria-label="Chat" (click)="requireAuthAction(); $event.preventDefault()">
+            <!-- IMAGE PLACEHOLDER - Chat Unselected.svg 32x32, replace with actual asset -->
+            <img src="../../../assets/icons/roles/Chat Unselected.svg" alt="Chat" />
+          </a>
+          @if (isAuthenticated()) {
+            <a href="#" class="login-signup-link" (click)="logout($event)">
+              <span>Logout</span>
+            </a>
+          } @else {
+            <a href="#" class="login-signup-link" (click)="onLoginSignup($event)">
+              <span>Login / Signup</span>
+            </a>
+          }
+          <div class="powered-by">
+            <span class="powered-by-text">Powered by</span>
+            <!-- @if (university()?.logo) {
+              <img class="logo-placeholder" [src]="university()!.logo" alt="University logo" />
+            } @else { -->
+              <!-- IMAGE PLACEHOLDER - logo 50x50, replace with actual asset -->
+              <img class="logo-placeholder" src="../../../assets/images/intoto logo.png" alt="Powered by" />
+            <!-- } -->
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Search and Filters Section -->
+    <section class="search-section">
+      <div class="search-bar-container">
+        <p-inputgroup class="search-input-group">
+          <p-inputgroup-addon>
+            <i class="pi pi-search"></i>
+          </p-inputgroup-addon>
+          <input
+            pInputText
+            [(ngModel)]="searchQuery"
+            placeholder="Search ambassadors, programs, countries..."
+            class="search-input"
+          />
+        </p-inputgroup>
+        <p-button label="Search" (click)="onSearch()" class="search-button" />
+      </div>
+
+      <div class="filters-container">
+        <div class="filter-buttons">
+          @for (filter of filters(); track filter) {
+            <p-button
+              [label]="filter"
+              [outlined]="activeFilter() !== filter"
+              [text]="activeFilter() !== filter"
+              [severity]="activeFilter() === filter ? 'primary' : 'secondary'"
+              (click)="setActiveFilter(filter)"
+              class="filter-button"
+              [ngClass]="{ 'filter-active': activeFilter() === filter }"
+            />
+          }
+        </div>
+        <p-button [rounded]="true" [text]="true" class="refresh-button" (click)="onRefresh()">
+          <!-- IMAGE PLACEHOLDER - Refresh icon 17.42x16.5, replace with actual asset -->
+          <img src="../../../assets/icons/Icon.svg" alt="Refresh" class="button-icon" />
+        </p-button>
+      </div>
+    </section>
+
+    <!-- Ambassador Cards Section -->
+    <section class="ambassadors-section">
+      <h2 class="section-title">{{ ambassadorsSection()?.title ?? 'Chat with Our Ambassadors' }}</h2>
+      @if (listLoading() && ambassadors().length === 0) {
+        <div class="loading-state ambassadors-loading">
+          <app-loader />
+          <p class="loading-label">Loading ambassadors...</p>
+        </div>
+      } @else {
+      <div class="ambassadors-cards-container">
+        <div class="ambassadors-cards-grid">
+          @for (ambassador of visibleAmbassadors(); track ambassador.id) {
+            <div class="ambassador-card" (click)="onCardClick()">
+              <div class="card-header">
+                <span class="status-text" [class.online]="ambassador.status === 'online'">{{
+                  ambassador.statusText
+                }}</span>
+                <span class="badge">{{ ambassador.badge }}</span>
+              </div>
+              <div class="card-body">
+                  <div class="profile-image-wrapper">
+                    @if (ambassador.profileImage) {
+                      <img [src]="ambassador.profileImage" alt="" class="profile-image" />
+                    } @else {
+                      <div class="profile-image-placeholder">
+                        {{ getInitials(ambassador.name) }}
+                      </div>
+                    }
+                  <!-- <span class="country-flag-icon"><i class="pi pi-map-marker"></i></span> -->
+                  <!-- @if (ambassador.status === 'online') {
+                    <span class="online-indicator"></span>
+                  } -->
+                </div>
+                <h3 class="ambassador-name">{{ ambassador.name }}</h3>
+                <p class="ambassador-country">{{ ambassador.country }}</p>
+                <p class="ambassador-description">{{ ambassador.description }}</p>
+                <div class="card-separator"></div>
+                <div class="program-info">
+                  <span class="label">Program</span>
+                  <span class="value">{{ ambassador.program }}</span>
+                </div>
+                <div class="interests-info">
+                  <span class="label">Interests</span>
+                  <div class="interests-chips">
+                    @for (interest of ambassador.interests; track interest.label) {
+                      <div class="interest-chip">
+                        <i [class]="'pi interest-icon ' + interest.icon"></i>
+                        <span class="interest-label">{{ interest.label }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+                <p-button
+                  label="Chat"
+                  icon="pi pi-comments"
+                  iconPos="left"
+                  class="chat-button"
+                  (click)="onChatClick(); $event.stopPropagation()"
+                />
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+      @if (ambassadors().length === 0 && !listLoading()) {
+        <p class="no-ambassadors">No ambassadors found.</p>
+      }
+      @if (hasMoreAmbassadors()) {
+        <a href="#" class="see-more-link" (click)="showMore($event)">
+          See More
+        </a>
+      }
+      }
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+      <h2 class="section-title">{{ faqsSection()?.title ?? 'Ambassador FAQ' }}</h2>
+      <p-accordion [(value)]="activeFaqIndex" [multiple]="true" class="faq-accordion">
+        @for (faq of faqsSection()?.list ?? []; track faq._id; let i = $index) {
+          <p-accordion-panel [value]="i" class="faq-panel">
+            <p-accordion-header class="faq-header">
+              <span class="faq-question">{{ faq.question }}</span>
+            </p-accordion-header>
+            <p-accordion-content class="faq-answer-container">
+              <p class="faq-answer">{{ faq.answer }}</p>
+            </p-accordion-content>
+          </p-accordion-panel>
+        }
+      </p-accordion>
+    </section>
+
+    <!-- Filter Modals -->
+    <app-filter-modal
+      [visible]="programModalVisible()"
+      [title]="'Filter by Program'"
+      [searchPlaceholder]="'Search programs...'"
+      [items]="programOptions"
+      [selectedIds]="selectedPrograms()"
+      (apply)="onProgramModalApply($event)"
+      (close)="closeProgramModal()"
+    />
+    <app-filter-modal
+      [visible]="countryModalVisible()"
+      [title]="'Filter by Country'"
+      [searchPlaceholder]="'Search countries...'"
+      [items]="countryOptions"
+      [selectedIds]="selectedCountries()"
+      (apply)="onCountryModalApply($event)"
+      (close)="closeCountryModal()"
+    />
+  }
+</div>

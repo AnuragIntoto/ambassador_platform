@@ -1,0 +1,824 @@
+/* Figma Design Tokens - Pixel-perfect from node 1-202, 1-3128, 1-9231 */
+$font-family: 'Inter', sans-serif;
+
+/* Colors - exact hex/rgba from Figma */
+$primary-color: #ffffff;
+$secondary-color: #02a3ca;
+$text-color: #000000; /* Accent Color */
+$text-light-color: rgba(0, 0, 0, 0.7); /* Text Light Color */
+$light-black-color: #7c7c7c;
+$light-icon-color: #919191;
+$stroke-color: #c4c4c4;
+$stroke-50: rgba(196, 196, 196, 0.5);
+$approve-color: #3dc076;
+$box-color: #f4f6f8;
+$badge-fill: rgba(2, 163, 202, 0.1);
+
+/* Typography - exact Figma values */
+$h1-bold: 700 32px / 1.2 $font-family;
+$h6-regular: 400 18px / 1.2 $font-family;
+$h6-bold: 700 18px / 1.2 $font-family;
+$large-regular: 400 16px / 1.25 $font-family;
+$large-bold: 700 16px / 1.2 $font-family;
+$large-medium: 500 16px / 1.21 $font-family;
+$body-regular: 400 14px / 1.5 $font-family;
+$body-bold: 700 14px / 1.2 $font-family;
+$small-regular: 400 12px / 1.2 $font-family;
+
+/* Desktop: layout_8LQI6G - 1920x1869, padding from edges 141px */
+.dashboard {
+  font-family: $font-family;
+  background-color: $primary-color;
+  min-height: 100vh;
+  padding: 40px 141px 40px;
+  max-width: 1920px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/** Pre-login overlay: any click redirects to Auth0 login */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  cursor: pointer;
+}
+
+.loading-state {
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+
+  .loading-label {
+    margin: 0;
+    font: $body-regular;
+    color: $text-color;
+  }
+}
+
+.error-state {
+  padding: 48px;
+  text-align: center;
+  font: $body-regular;
+  color: $text-color;
+}
+
+.error-state {
+  color: #c0392b;
+}
+
+/* Header - layout_FWLZVL: column gap 16px */
+.dashboard-header {
+  margin-bottom: 40px;
+}
+
+/* layout_7TM5WP: row, space-between equivalent via gap 981px → flex */
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.header-left {
+  flex: 1;
+  min-width: 0;
+}
+
+/* layout_92TAHQ: header right, gap 25px, width 268 */
+.header-right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 25px;
+}
+
+/* layout_5TGTNU: Chat, Login, Powered by - gap 16px */
+.header-right-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-title {
+  font: $h1-bold;
+  color: $text-color;
+  margin: 0 0 16px 0;
+  letter-spacing: 0;
+}
+
+/* layout_D0V68Y: description, H6 18 Regular, Text Light */
+.page-description {
+  font: $h6-regular;
+  color: $text-light-color;
+  margin: 0;
+  max-width: 1194px;
+}
+
+.chat-icon-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: $primary-color;
+  text-decoration: none;
+  cursor: pointer;
+
+  img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+  }
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+/* IMAGE PLACEHOLDER - Chat Unselected.svg: 32x32 */
+.login-signup-link {
+  display: flex;
+  align-items: center;
+  font: $body-bold;
+  font-size: 14px;
+  color: $text-color;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* layout_S47T2E: Powered by row, gap 8px */
+.powered-by {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* style_TNYUFV: 16px regular, Light Black */
+.powered-by-text {
+  font: 400 16px / 1.21 $font-family;
+  color: $light-black-color;
+}
+
+/* layout_9PCJZ7: IMAGE PLACEHOLDER - logo 50x50, replace with actual asset */
+.logo-placeholder {
+  width: 50px;
+  height: 50px;
+  border-radius: 0;
+  background-color: $box-color;
+  object-fit: cover;
+}
+
+/* Search Section - layout_7C6QRX: column gap 60px */
+.search-section {
+  margin-bottom: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+/* layout_EL0ILF: row gap 16px, height 52 */
+.search-bar-container {
+  margin-bottom: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  height: 52px;
+
+  .search-input-group {
+    flex: 1;
+    min-width: 0;
+  }
+
+  ::ng-deep .p-inputgroup.search-input-group,
+  ::ng-deep .p-inputgroup.search-input-group .p-inputgroup {
+    display: flex;
+    align-items: stretch;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid $stroke-color;
+    background-color: $primary-color;
+    height: 52px;
+
+    .p-inputgroup-addon:first-child,
+    .p-inputgroup-addon + .p-inputgroup-addon,
+    .p-inputgroupaddon:first-child,
+    .p-inputgroupaddon + .p-inputgroupaddon {
+      border-inline-start: none !important;
+    }
+
+    .p-inputgroup-addon,
+    .p-inputgroupaddon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px !important;
+      background: transparent !important;
+      color: $light-black-color;
+      border: none !important;
+    }
+
+    .p-inputtext,
+    input.p-inputtext {
+      border: none;
+      background-color: transparent;
+      color: $text-color;
+      font: $large-regular;
+      padding: 12px 16px;
+      flex: 1;
+      height: 100%;
+
+      &::placeholder {
+        color: $light-black-color;
+      }
+    }
+  }
+}
+
+/* layout_DGTMBF: padding 11px 27px, 187x48, radius 8px */
+.search-button {
+  flex-shrink: 0;
+
+  ::ng-deep .p-button {
+    background-color: $secondary-color;
+    border-color: $secondary-color;
+    font: $large-bold;
+    color: $primary-color;
+    padding: 11px 27px;
+    border-radius: 8px;
+    height: 52px;
+    min-width: 187px;
+  }
+}
+
+/* layout_LU05BP: filters container */
+.filters-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0;
+  flex-wrap: wrap;
+}
+
+/* layout_Q1KXRS: filter buttons gap 8px */
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* layout_36UNJF: padding 12px 24px, radius 10px */
+.filter-button {
+  ::ng-deep .p-button {
+    font: $large-regular;
+    border-radius: 10px;
+    padding: 12px 24px;
+    gap: 10px;
+
+    &.filter-active,
+    &.p-button-primary {
+      background-color: $secondary-color;
+      border-color: $secondary-color;
+      color: $primary-color;
+      font: $large-medium;
+    }
+
+    &.p-button-secondary,
+    &.p-button-outlined,
+    &.p-button-text {
+      background-color: $primary-color;
+      border: 1.18px solid $stroke-50;
+      color: $text-color;
+
+      &:hover {
+        background-color: $box-color;
+      }
+    }
+  }
+}
+
+/* layout_1B83VZ: refresh 43x43, padding 12px 16px, radius 8px */
+.refresh-button {
+  ::ng-deep .p-button {
+    width: 43px;
+    height: 43px;
+    min-width: 43px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background-color: $primary-color;
+    border: 1px solid $stroke-color;
+    color: $light-black-color;
+
+    .button-icon {
+      width: 17.42px;
+      height: 16.5px;
+      object-fit: contain;
+    }
+  }
+}
+
+/* Ambassadors Section - layout_QVITA0: gap 40px */
+.ambassadors-section {
+  margin-bottom: 40px;
+}
+
+.ambassadors-loading {
+  margin: 24px 0;
+}
+
+.no-ambassadors {
+  text-align: center;
+  font: $body-regular;
+  color: $text-light-color;
+  margin: 24px 0;
+}
+
+/* layout_75A9SU, H1 32 Bold */
+.section-title {
+  font: $h1-bold;
+  color: $text-color;
+  margin: 0 0 40px 0;
+}
+
+.ambassadors-cards-container {
+  margin-bottom: 40px;
+}
+
+/* layout_JIF77Z: row gap 27px - 4 cards, card width 389.33 */
+.ambassadors-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 27px;
+}
+
+/* layout_AXBOIO: card width 389.33, border 1.18px, radius 10px */
+.ambassador-card {
+  background-color: $primary-color;
+  border: 1.18px solid $stroke-color;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* layout_OQ22R3: padding 20px, gap 16px */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px 0;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.card-header .status-text {
+  font: $small-regular;
+  color: $text-light-color;
+
+  &.online {
+    color: $approve-color;
+  }
+}
+
+/* layout_8EDW5G: fill_BSQN03, stroke Secondary 0.5px, padding 4px 12px, radius 9999px */
+.badge {
+  font: $small-regular;
+  color: $secondary-color;
+  background-color: $badge-fill;
+  border: 0.5px solid $secondary-color;
+  padding: 4px 12px;
+  border-radius: 9999px;
+}
+
+.card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: 16px;
+}
+
+/* layout_LZ5ROT: profile image 96x96 */
+.profile-image-wrapper {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+}
+
+.profile-image {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 4px #f3f4f6;
+}
+
+.profile-image-placeholder {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background-color: $secondary-color;
+  color: $primary-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 700 28px / 1.2 $font-family;
+}
+
+/* layout_CER1G8: country flag 32x32, bottom center */
+.country-flag-icon {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  width: 32px;
+  height: 32px;
+  background-color: $primary-color;
+  border: 1px solid $stroke-50;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  i {
+    font-size: 14px;
+    color: $text-color;
+  }
+}
+
+/* layout_WWDBZD: online indicator 16x16, top-right of image */
+.online-indicator {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  background-color: $approve-color;
+  border: 1.18px solid $primary-color;
+  border-radius: 50%;
+}
+
+.ambassador-name {
+  font: $h6-bold;
+  color: $text-color;
+  margin: 0;
+  text-align: center;
+}
+
+.ambassador-country {
+  font: $body-regular;
+  color: $text-light-color;
+  margin: 0;
+  text-align: center;
+}
+
+.ambassador-description {
+  font: $body-regular;
+  color: $text-color;
+  margin: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* layout_P03V25: separator + Program, stroke Stroke 50% */
+.card-separator {
+  width: 100%;
+  height: 1px;
+  background-color: $stroke-50;
+  margin: 0;
+}
+
+.program-info,
+.interests-info {
+  width: 100%;
+  text-align: left;
+  margin: 0;
+
+  .label {
+    font: $small-regular;
+    color: $text-light-color;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .value {
+    font: $body-regular;
+    color: $text-color;
+  }
+}
+
+.interests-info {
+  margin-bottom: 0;
+}
+
+/* layout_PHJH9A, layout_J1A4XM: Box color, radius 4px, padding-left 10px, gap 4px */
+.interests-chips {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.interest-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 1;
+  min-width: 0;
+  padding: 4px 10px 4px 10px;
+  border-radius: 4px;
+  font: $small-regular;
+  color: $text-light-color;
+  background-color: $box-color;
+
+  .interest-icon {
+    font-size: 16px;
+    color: $text-light-color;
+    flex-shrink: 0;
+  }
+
+  .interest-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+}
+
+/* layout_FLFNUJ: padding 11px 129px, radius 10px, full width */
+.chat-button {
+  width: 100%;
+  margin-top: 8px;
+
+  ::ng-deep .p-button {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    background-color: $secondary-color;
+    border-color: $secondary-color;
+    font: $body-bold;
+    color: $primary-color;
+    border-radius: 10px;
+  }
+}
+
+/* layout_75A9SU: See More, Large 16 Bold, Secondary */
+/* Figma: See More - Large 16 Bold, Secondary Color */
+.see-more-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 40px;
+  font: $large-bold;
+  color: $secondary-color;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+/* FAQ Section - layout_5GEX8T, layout_M8PW0L */
+.faq-section {
+  .section-title {
+    margin-bottom: 24px;
+    font: $h1-bold;
+    color: $text-color;
+  }
+
+  .faq-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .faq-panel {
+    border: 1px solid $stroke-color;
+    border-radius: 10px;
+  }
+
+  ::ng-deep .p-accordion {
+    .p-accordion-panel {
+      border: 0.8px solid $stroke-color;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      overflow: hidden;
+      background-color: $primary-color;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .p-accordionheader {
+      display: flex;
+      align-items: center;
+      background-color: $primary-color;
+      border: none;
+      padding: 16px 20px;
+      border-radius: 10px;
+      overflow: visible !important;
+
+      .p-accordionheader-toggle-icon,
+      svg.p-accordionheader-toggle-icon {
+        flex-shrink: 0;
+        position: relative;
+        z-index: 2;
+        color: $light-black-color;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+
+      &:hover .p-accordionheader-toggle-icon,
+      &:hover svg.p-accordionheader-toggle-icon {
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+    }
+
+    .p-accordionheader-content {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    .p-accordioncontent {
+      padding: 0 20px 0;
+      transition: padding 0.2s ease;
+    }
+
+    // when panel is open
+    .p-accordion-panel.p-accordion-panel-active {
+      .p-accordioncontent {
+        padding: 0 20px 16px;
+      }
+    }
+
+    .p-accordioncontent-content {
+      padding: 0;
+    }
+  }
+}
+
+.faq-question {
+  font: $h6-bold;
+  color: $text-color;
+}
+
+.faq-answer {
+  font: $large-regular;
+  color: $text-color;
+  margin: 0;
+  line-height: 1.25;
+}
+
+/* ========== MOBILE - Figma 1-9231, width 412px ========== */
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 20px;
+    max-width: 412px;
+    margin: 0 auto;
+  }
+
+  .dashboard-header {
+    margin-bottom: 24px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  /* Top app bar: H6 18 Bold */
+  .page-title {
+    font: $h6-bold;
+    font-size: 18px;
+    margin: 0;
+  }
+
+  .header-right {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* layout_XO4CVA: Powered by gap 4px */
+  .powered-by {
+    gap: 4px;
+  }
+
+  .logo-placeholder {
+    width: 50px;
+    height: 50px;
+  }
+
+  .chat-icon-link {
+    display: none;
+  }
+
+  .page-description {
+    font: $body-regular;
+    font-size: 14px;
+    max-width: 372px;
+  }
+
+  /* layout_D3LE25: search 372x48, padding 12px 16px */
+  .search-section {
+    margin-bottom: 24px;
+  }
+
+  .search-bar-container {
+    height: 48px;
+    flex-direction: column;
+    height: auto;
+  }
+
+  .search-bar-container ::ng-deep .p-inputgroup {
+    height: 48px;
+  }
+
+  .search-button ::ng-deep .p-button {
+    height: 48px;
+    min-width: 100%;
+  }
+
+  /* layout_PA9304: filters horizontal scroll, gap 8px */
+  .filters-container {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .filter-buttons {
+    flex-wrap: nowrap;
+    min-width: max-content;
+  }
+
+  .filter-button ::ng-deep .p-button {
+    padding: 12px 16px;
+  }
+
+  .section-title {
+    font: $h6-bold;
+    font-size: 18px;
+    margin-bottom: 24px;
+  }
+
+  /* layout_L1W241: cards width 372, gap 16px */
+  .ambassadors-cards-container {
+    margin-bottom: 24px;
+  }
+
+  .ambassadors-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .ambassador-card {
+    max-width: 372px;
+    margin: 0 auto;
+  }
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .dashboard {
+    padding: 40px 24px;
+  }
+
+  .ambassadors-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Smaller desktop: reduce side padding */
+@media (max-width: 1440px) {
+  .dashboard {
+    padding: 40px 64px;
+  }
+}

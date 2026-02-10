@@ -1,0 +1,106 @@
+.login-form-section {
+  background-color: #ffff;
+}
+
+h4 {
+  font-weight: 700;
+  font-style: Bold;
+  font-size: 24px;
+  line-height: 24px;
+  letter-spacing: 1%;
+  text-align: center;
+  color: #000000;
+}
+
+p {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 1%;
+  text-align: center;
+  color: #000000;
+}
+
+.login-form {
+  width: 35vw;
+}
+
+label {
+  font-weight: 500;
+  font-style: Medium;
+  font-size: 14px;
+  line-height: 16px;
+  color: #000000;
+}
+
+span {
+  font-weight: 500;
+  font-style: Medium;
+  font-size: 14px;
+  line-height: 16px;
+  letter-spacing: 1%;
+  text-align: center;
+  text-decoration: underline;
+  text-decoration-style: solid;
+  color: #000000;
+  cursor: pointer;
+}
+
+.footer-text {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: 1%;
+  color: #000000;
+
+  span {
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 18px;
+    text-align: center;
+    vertical-align: middle;
+    text-decoration: underline;
+    text-decoration-style: solid;
+  }
+}
+
+.header-icon {
+  width: 56px;
+  height: 56px;
+  opacity: 1;
+  background-color: #00c9861a;
+  border-radius: 50%;
+}
+
+h5 {
+  font-weight: 700;
+  font-weight: bold;
+  font-size: 20px;
+  line-height: 26px;
+  text-align: center;
+  color: #000000;
+  margin: 0;
+}
+
+p {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 24px;
+  text-align: center;
+  color: #000000;
+
+  span {
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+    text-align: center;
+    text-decoration: underline;
+    text-decoration-style: solid;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-form {
+    width: 90vw;
+  }
+}

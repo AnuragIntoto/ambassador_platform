@@ -13,8 +13,8 @@
   <div class="filter-modal-content">
     @if (searchPlaceholder()) {
       <div class="filter-modal-search">
-        <span class="p-input-icon-left">
-          <i class="pi pi-search"></i>
+        <div class="filter-search-wrapper">
+          <i class="pi pi-search filter-search-icon" aria-hidden="true"></i>
           <input
             pInputText
             type="text"
@@ -23,27 +23,37 @@
             [ngModel]="search()"
             class="filter-search-input"
           />
-        </span>
+        </div>
       </div>
     }
-    <div class="filter-modal-list">
-      @for (item of filteredItems(); track item.id) {
-        <label class="filter-modal-option" [attr.for]="'filter-' + item.id">
-          <p-checkbox
-            [inputId]="'filter-' + item.id"
-            [ngModel]="isChecked(item.id)"
-            (ngModelChange)="toggle(item.id, $event)"
-            [binary]="true"
-          />
-          <span class="filter-option-label">{{ item.label }}</span>
-        </label>
-      }
+    <div
+      class="filter-modal-list-scroll"
+      (scroll)="onScroll($event)"
+    >
+      <div class="filter-modal-list">
+        @for (item of filteredItems(); track item.id) {
+          <label class="filter-modal-option" [attr.for]="'filter-' + item.id">
+            <p-checkbox
+              [inputId]="'filter-' + item.id"
+              [ngModel]="isChecked(item.id)"
+              (ngModelChange)="toggle(item.id, $event)"
+              [binary]="true"
+            />
+            <span class="filter-option-label">{{ item.label }}</span>
+          </label>
+        }
+        @if (loadingMore()) {
+          <div class="filter-modal-loading-more">Loading more...</div>
+        }
+      </div>
     </div>
   </div>
   <ng-template pTemplate="footer">
     <div class="filter-modal-footer">
-      <p-button label="Clear All" severity="secondary" [outlined]="true" (click)="clearAll()" />
-      <p-button label="Apply Filters" (click)="onApply()" />
+      <div class="clear-all-wrapper" [class.clear-all-applied]="hasSelection()">
+        <p-button label="Clear All" severity="secondary" [outlined]="!hasSelection()" (click)="clearAll()" />
+      </div>
+      <p-button class="btn-applyFilter" label="Apply Filters" (click)="onApply()" />
     </div>
   </ng-template>
 </p-dialog>

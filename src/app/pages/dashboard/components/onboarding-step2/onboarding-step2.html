@@ -1,0 +1,209 @@
+<div class="onboarding-step2">
+  @if (loading()) {
+    <div class="onboarding-step2-loading">
+      <p>Loading form...</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="onboarding-step2-error">{{ loadError() }}</div>
+  } @else if (config(); as configInfo) {
+    <!-- Header: Figma Frame 1707478836 – 64px height, row, gap 16px, padding-left 141px -->
+    <header class="onboarding-step2-header">
+      <div class="onboarding-step2-header-inner">
+        <div class="onboarding-step2-header-left">
+          <button type="button" class="onboarding-step2-back" aria-label="Back" (click)="onBack()">
+            <!-- IMAGE PLACEHOLDER – back arrow 32x32, replace with actual asset -->
+             <img src="../../../../../assets/icons/roles/back icon.svg" alt="">
+          </button>
+          <h1 class="onboarding-step2-step-title">Step 2/2</h1>
+        </div>
+        <div class="onboarding-step2-powered">
+          <span class="onboarding-step2-powered-text">Powered by</span>
+          <!-- IMAGE PLACEHOLDER – logo 50x50, replace with actual asset -->
+          <div class="onboarding-step2-logo" aria-hidden="true"><img width="50px" src="../../../../../assets/images/intoto logo.png" alt=""></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Form card: scrollable content area with thin scrollbar -->
+    <div class="onboarding-step2-card">
+      <div class="onboarding-step2-card-scroll">
+        <div class="onboarding-step2-form">
+          <h2 class="onboarding-step2-title">{{ configInfo.title ?? 'Tell us a bit about you' }}</h2>
+          @if (configInfo.description) {
+            <p class="onboarding-step2-description">{{ configInfo.description }}</p>
+          }
+
+          <form (ngSubmit)="onSubmit()" class="onboarding-step2-fields">
+          @for (q of questions(); track q._id) {
+            <div class="onboarding-step2-field">
+              <label [for]="'q-' + q._id" class="onboarding-step2-label">
+                {{ q.question }}{{ q.required ? '*' : '' }}
+              </label>
+              @if (q.description) {
+                <p class="onboarding-step2-question-desc">{{ q.description }}</p>
+              }
+
+              @switch (q.type) {
+                @case ('text') {
+                  <input
+                    [id]="'q-' + q._id"
+                    type="text"
+                    class="onboarding-step2-input"
+                    [class.onboarding-step2-input-error]="validationErrors()[q._id]"
+                    [placeholder]="q.placeholder ?? ''"
+                    [ngModel]="getValue(q)"
+                    (ngModelChange)="setValue(q, $event)"
+                    name="q-{{ q._id }}"
+                    [attr.minLength]="q.validation?.minLength ?? null"
+                    [attr.maxLength]="q.validation?.maxLength ?? null"
+                  />
+                }
+                @case ('textarea') {
+                  <textarea
+                    [id]="'q-' + q._id"
+                    class="onboarding-step2-textarea"
+                    [class.onboarding-step2-input-error]="validationErrors()[q._id]"
+                    [placeholder]="q.placeholder ?? ''"
+                    [ngModel]="getValue(q)"
+                    (ngModelChange)="setValue(q, $event)"
+                    name="q-{{ q._id }}"
+                    rows="4"
+                    [attr.maxLength]="q.validation?.maxLength ?? null"
+                  ></textarea>
+                }
+                @case ('mcq') {
+                  <select
+                    [id]="'q-' + q._id"
+                    class="onboarding-step2-select"
+                    [class.onboarding-step2-input-error]="validationErrors()[q._id]"
+                    [ngModel]="getValue(q)"
+                    (ngModelChange)="setValue(q, $event)"
+                    name="q-{{ q._id }}"
+                  >
+                    <option value="" disabled>Select</option>
+                    @for (opt of q.options ?? []; track opt.value) {
+                      <option [value]="opt.value">{{ opt.label }}</option>
+                    }
+                  </select>
+                }
+                @case ('checkbox') {
+                  <div
+                    class="onboarding-step2-checkbox-group"
+                    [class.onboarding-step2-checkbox-group-error]="validationErrors()[q._id]"
+                  >
+                    @for (opt of q.options ?? []; track opt.value) {
+                      <label class="onboarding-step2-checkbox-option">
+                        <input
+                          type="checkbox"
+                          [checked]="isCheckboxChecked(q, opt.value)"
+                          (change)="toggleCheckboxOption(q, opt.value)"
+                        />
+                        <span>{{ opt.label }}</span>
+                      </label>
+                    }
+                  </div>
+                }
+                @case ('boolean') {
+                  <select
+                    [id]="'q-' + q._id"
+                    class="onboarding-step2-select"
+                    [class.onboarding-step2-input-error]="validationErrors()[q._id]"
+                    [ngModel]="getValue(q) === true ? 'true' : 'false'"
+                    (ngModelChange)="setValue(q, $event === 'true')"
+                    name="q-{{ q._id }}"
+                  >
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                }
+                @case ('number') {
+                  <input
+                    [id]="'q-' + q._id"
+                    type="number"
+                    class="onboarding-step2-input"
+                    [class.onboarding-step2-input-error]="validationErrors()[q._id]"
+                    [placeholder]="q.placeholder ?? ''"
+                    [ngModel]="getValue(q)"
+                    (ngModelChange)="setValue(q, $event)"
+                    name="q-{{ q._id }}"
+                    [attr.min]="q.validation?.min ?? null"
+                    [attr.max]="q.validation?.max ?? null"
+                  />
+                }
+                @case ('date') {
+                  <label [for]="'q-' + q._id" class="onboarding-step2-date-wrapper">
+                    <input
+                      [id]="'q-' + q._id"
+                      type="date"
+                      class="onboarding-step2-input"
+                      [class.onboarding-step2-input-error]="validationErrors()[q._id]"
+                      [ngModel]="getValue(q)"
+                      (ngModelChange)="setValue(q, $event)"
+                      name="q-{{ q._id }}"
+                    />
+                    <span class="onboarding-step2-date-icon" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                    </span>
+                  </label>
+                }
+              }
+              @if (validationErrors()[q._id]) {
+                <span class="onboarding-step2-error-msg">{{ validationErrors()[q._id] }}</span>
+              }
+            </div>
+          }
+
+          <!-- Marketing checkbox: Figma Frame 1707478837 -->
+          <div class="onboarding-step2-marketing">
+            <label class="onboarding-step2-marketing-label">
+              <input
+                type="checkbox"
+                [ngModel]="marketingConsent()"
+                (ngModelChange)="marketingConsent.set($event)"
+                name="marketing"
+              />
+              <span class="onboarding-step2-marketing-text">
+                By checking this box, you agree to receive marketing communication. You can unsubscribe at any time.
+              </span>
+            </label>
+          </div>
+
+          @if (submitError()) {
+            <p class="onboarding-step2-submit-error">{{ submitError() }}</p>
+          }
+
+          <div class="onboarding-step2-actions">
+            <button
+              type="submit"
+              class="onboarding-step2-submit"
+              [disabled]="submitting()"
+            >
+              {{ submitting() ? 'Submitting...' : 'Submit' }}
+            </button>
+            @if (allowSkip()) {
+              <button
+                type="button"
+                class="onboarding-step2-skip"
+                [disabled]="submitting()"
+                (click)="onSkip()"
+              >
+                Skip
+              </button>
+            }
+          </div>
+        </form>
+
+          <p class="onboarding-step2-privacy">
+            By completing your profile, you agree to
+            <a href="#" class="onboarding-step2-privacy-link">University Name Privacy Policy</a>, which will outline if your data is shared with this partner.
+          </p>
+        </div>
+      </div>
+    </div>
+  }
+</div>

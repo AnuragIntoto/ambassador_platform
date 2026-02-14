@@ -7,7 +7,7 @@ import {
   signal,
   ChangeDetectorRef,
 } from '@angular/core';
-import { take } from 'rxjs';
+import { take, filter, switchMap, of } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -18,14 +18,25 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { AuthService } from '@auth0/auth0-angular';
 import { AmbassadorPlatformService } from '../../core/service/ambassador-platform/ambassador-platform.service';
+import {
+  ProspectProfileService,
+  type SetupProfilePayload,
+} from '../../core/service/prospect-profile/prospect-profile.service';
 import { Loader } from '../../shared/components/loader/loader';
-import { FilterModal } from '../../shared/components/filter-modal/filter-modal';
+import { BasicInfoModal } from './components/basic-info-modal/basic-info-modal';
+import { OnboardingStep2 } from './components/onboarding-step2/onboarding-step2';
+import { FilterModal, type FilterOption } from '../../shared/components/filter-modal/filter-modal';
 import { environment } from '../../../environments/environment';
+import { needsBasicInfo, shouldShowOnboarding } from '../../core/models/prospect-profile.model';
 import type {
   AmbassadorApi,
   AmbassadorPlatformInfo,
-  AmbassadorListDoc,
+  HomeListParams,
 } from '../../core/models/ambassador-platform.model';
+import {
+  homeListDocToAmbassadorApi,
+} from '../../core/models/ambassador-platform.model';
+import type { ProspectProfileLoginInfo } from '../../core/models/prospect-profile.model';
 
 export interface AmbassadorDisplay {
   id: string;
@@ -60,6 +71,17 @@ function interestToIcon(label: string): string {
   return INTEREST_ICON_MAP[key] ?? 'pi-tag';
 }
 
+/** Resolve badge string; /home API may return ambassadorType as object, causing [object Object]. */
+function getBadgeString(api: AmbassadorApi): string {
+  const t = api.ambassadorType;
+  if (typeof t === 'string') return t;
+  if (t && typeof t === 'object') {
+    const o = t as { displayName?: string; name?: string };
+    return o.displayName ?? o.name ?? 'Student';
+  }
+  return 'Student';
+}
+
 function mapAmbassador(api: AmbassadorApi): AmbassadorDisplay {
   const fallbackProgram = `${api.academicYear?.university ?? ''} - ${api.academicYear?.campus ?? ''}`.trim();
   const program =
@@ -68,8 +90,6 @@ function mapAmbassador(api: AmbassadorApi): AmbassadorDisplay {
     icon: interestToIcon(label),
     label,
   }));
-  const typeRef = api.ambassadorType;
-  const badge = typeRef?.displayName ?? typeRef?.name ?? 'Student';
   return {
     id: api._id,
     name: api.name ?? '',
@@ -80,38 +100,7 @@ function mapAmbassador(api: AmbassadorApi): AmbassadorDisplay {
     profileImage: api.picture ?? '',
     status: 'offline',
     statusText: 'Offline',
-    badge,
-  };
-}
-
-function mapListDocToDisplay(doc: AmbassadorListDoc): AmbassadorDisplay {
-  const f = doc.basicInfo;
-  const a = doc.ambassadorInfo;
-  const firstName = f?.firstName?.value ?? '';
-  const lastName = f?.lastName?.value ?? '';
-  const name = [firstName, lastName].filter(Boolean).join(' ') || '—';
-  const country = f?.country?.value ?? '';
-  const fallbackProgram = a?.academicYear
-    ? `${a.academicYear.university ?? ''} - ${a.academicYear.campus ?? ''}`.trim()
-    : '';
-  const program = a?.favouritePrograms?.[0] ?? (fallbackProgram || '—');
-  const interests = (a?.interest ?? []).map((label) => ({
-    icon: interestToIcon(label),
-    label,
-  }));
-  const typeRef = a?.ambassadorType;
-  const badge = typeRef?.displayName ?? typeRef?.name ?? 'Student';
-  return {
-    id: doc._id,
-    name,
-    country,
-    description: a?.about ?? '',
-    program,
-    interests,
-    profileImage: doc.picture?.value ?? '',
-    status: 'offline',
-    statusText: 'Offline',
-    badge,
+    badge: getBadgeString(api),
   };
 }
 
@@ -119,46 +108,34 @@ function getFilterLabels(filters: string[]): string[] {
   return (filters ?? []).filter((f) => typeof f === 'string' && !f.startsWith('http'));
 }
 
-const AMBASSADOR_TYPE_OPTIONS = [
-  { id: 'STUDENT', label: 'Students' },
-  { id: 'ALUMNI', label: 'Alumni' },
-  { id: 'STAFF', label: 'Staff' },
-] as const;
+const REFID_KEY = 'refId';
 
-const PROGRAM_OPTIONS = [
-  'Business & Management',
-  'Computer Science & IT',
-  'Engineering',
-  'Arts & Humanities',
-  'Social Sciences',
-  'Hospitality & Tourism',
-  'Medicine',
-  'Finance',
-  'Marketing',
-  'Cultural Studies',
-  'Psychology',
-  'Philosophy',
-  'AI & Robotics',
-  'Cybersecurity',
-  'International Business',
-  'UX Design',
-  'Software Engineering',
-  'Game Development',
-  'Health Sciences',
-  'Biomedical Sciences',
-  'Electrical Engineering',
-  'Environmental Activism',
-].map((label, i) => ({ id: label, label }));
+interface RefStorage {
+  _id?: string;
+  universityId?: string;
+}
 
-const COUNTRY_OPTIONS = [
-  'Afghanistan', 'Albania', 'Algeria', 'Argentina', 'Bahrain', 'Bangladesh',
-  'Bulgaria', 'Cambodia', 'Canada', 'China', 'Egypt', 'Ethiopia', 'France',
-  'Germany', 'India', 'Indonesia', 'Iran', 'Iraq', 'Italy', 'Japan', 'Jordan',
-  'Kenya', 'Malaysia', 'Mexico', 'Morocco', 'Nigeria', 'Pakistan', 'Philippines',
-  'Poland', 'Romania', 'Russia', 'Saudi Arabia', 'South Africa', 'South Korea',
-  'Spain', 'Thailand', 'Turkey', 'Uganda', 'Ukraine', 'United Kingdom', 'USA',
-  'Vietnam', 'Yemen', 'Zimbabwe',
-].map((label) => ({ id: label, label }));
+function getRefIdFromStorage(): string {
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(REFID_KEY) : null;
+    if (!raw) return '';
+    const parsed = JSON.parse(raw) as RefStorage;
+    return parsed?._id ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function getUniversityIdFromStorage(): string {
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(REFID_KEY) : null;
+    if (!raw) return '';
+    const parsed = JSON.parse(raw) as RefStorage;
+    return parsed?.universityId ?? '';
+  } catch {
+    return '';
+  }
+}
 
 /** First letter of first name + first letter of last name. e.g. "Rajendra Doe" → "RD", "Shiva Raj Doe" → "SD" */
 function getInitials(name: string): string {
@@ -183,6 +160,8 @@ function getInitials(name: string): string {
     InputGroupModule,
     InputGroupAddonModule,
     Loader,
+    BasicInfoModal,
+    OnboardingStep2,
     FilterModal,
   ],
   templateUrl: './dashboard.html',
@@ -193,6 +172,7 @@ export class Dashboard implements OnInit {
 
   private readonly route = inject(ActivatedRoute);
   private readonly platformService = inject(AmbassadorPlatformService);
+  private readonly prospectProfileService = inject(ProspectProfileService);
   private readonly auth = inject(AuthService);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -205,16 +185,57 @@ export class Dashboard implements OnInit {
   loading = signal(false);
   error = signal<string | null>(null);
   isAuthenticated = signal(false);
-
-  programModalVisible = signal(false);
-  countryModalVisible = signal(false);
-
-  selectedPrograms = signal<string[]>([]);
-  selectedCountries = signal<string[]>([]);
-
-  listDocs = signal<AmbassadorListDoc[]>([]);
-  listHasNext = signal(false);
+  /** Ambassador list from home/list API (when authenticated). Replaces platformData.ambassadors.list when set. */
+  ambassadorListFromApi = signal<AmbassadorApi[]>([]);
   listLoading = signal(false);
+  listPage = signal(1);
+  listHasMore = signal(false);
+  listTotalDocs = signal(0);
+  /** Shown when prospect-profile/login indicates missing firstName or lastName. */
+  showBasicInfoModal = signal(false);
+  prospectProfileForModal = signal<ProspectProfileLoginInfo | null>(null);
+  /** True while PUT /api/user (submit) is in progress. */
+  basicInfoSubmitting = signal(false);
+  /** After basic info submit success, show Step 2/2 onboarding form. */
+  showOnboardingStep2 = signal(false);
+  /** Slug and refId passed to onboarding (set when opening step 2). */
+  onboardingSlug = signal('');
+  onboardingRefId = signal('');
+  /** Current dashboard university slug (from route). */
+  dashboardSlug = signal('');
+  /** By Country / By Program modal state and options */
+  showCountryFilterModal = signal(false);
+  showProgramFilterModal = signal(false);
+  countryFilterItems = signal<FilterOption[]>([]);
+  programFilterItems = signal<FilterOption[]>([]);
+  countryFilterLoading = signal(false);
+  programFilterLoading = signal(false);
+  /** Infinite scroll: country */
+  countryFilterPage = signal(1);
+  countryFilterHasMore = signal(true);
+  countryFilterLoadingMore = signal(false);
+  /** Infinite scroll: program */
+  programFilterPage = signal(1);
+  programFilterHasMore = signal(true);
+  programFilterLoadingMore = signal(false);
+  /** Selected filter values sent to home/list (when respective filter is active). */
+  selectedCountry = signal<string | undefined>(undefined);
+  selectedProgram = signal<string | undefined>(undefined);
+  /** Pre-selected ids when reopening modal (e.g. selectedCountryIds from last apply). */
+  selectedCountryIds = signal<string[]>([]);
+  selectedProgramIds = signal<string[]>([]);
+  /** Current user's profile picture URL from prospect-profile/login (info.picture.value). Shown in header when authenticated; cleared on logout. */
+  userProfilePicture = signal<string | null>(null);
+  /** Current user's first and last name (for initials when no profile picture). */
+  userFirstName = signal<string>('');
+  userLastName = signal<string>('');
+  /** Full name for getInitials. */
+  userDisplayName = computed(() => {
+    const first = this.userFirstName().trim();
+    const last = this.userLastName().trim();
+    if (!first && !last) return '';
+    return `${first} ${last}`.trim();
+  });
 
   filters = computed(() => {
     const info = this.platformData();
@@ -228,42 +249,41 @@ export class Dashboard implements OnInit {
     return url ?? null;
   });
 
-  /** Pre-login: Home API ambassadors. Post-login: List API docs. */
   ambassadors = computed(() => {
+    const fromApi = this.ambassadorListFromApi();
+    // When authenticated, always use API list (even if empty) so empty search/filter results show correctly
     if (this.isAuthenticated()) {
-      return this.listDocs().map(mapListDocToDisplay);
+      return fromApi.map(mapAmbassador);
     }
-    const homeList = this.platformData()?.ambassadors?.list ?? [];
-    return homeList.map(mapAmbassador);
+    const info = this.platformData();
+    const list = info?.ambassadors?.list ?? [];
+    return list.map(mapAmbassador);
   });
 
   visibleAmbassadors = computed(() =>
     this.ambassadors().slice(0, this.displayedCount())
   );
 
-  hasMoreAmbassadors = computed(() => {
-    const total = this.ambassadors().length;
-    const displayed = this.displayedCount();
-    if (this.isAuthenticated()) {
-      return this.listHasNext() || total > displayed;
-    }
-    return total > displayed;
-  });
+  hasMoreAmbassadors = computed(
+    () =>
+      this.listHasMore() ||
+      this.displayedCount() < this.ambassadors().length
+  );
 
   header = computed(() => this.platformData()?.header ?? null);
   ambassadorsSection = computed(() => this.platformData()?.ambassadors ?? null);
   faqsSection = computed(() => this.platformData()?.faqs ?? null);
   university = computed(() => this.platformData()?.university ?? null);
 
-  readonly programOptions = PROGRAM_OPTIONS;
-  readonly countryOptions = COUNTRY_OPTIONS;
-
   ngOnInit(): void {
     const slug =
       this.route.snapshot.paramMap.get('universitySlug') ??
       environment.ambassadorPlatform?.defaultUniversitySlug ??
       'pune-university';
+    this.dashboardSlug.set(slug);
+    console.log('[Dashboard] ngOnInit, slug:', slug);
 
+    // ─── Flow (1) Dashboard page loads: {{BaseUrl2}}/ambassador-platform/:slug/home ───
     this.platformService.loading.subscribe((v) => {
       this.loading.set(v);
       this.cdr.markForCheck();
@@ -274,6 +294,7 @@ export class Dashboard implements OnInit {
     });
     this.platformService.platformData$.subscribe((v) => {
       this.platformData.set(v);
+      console.log('[Dashboard] platformData received', v ? { hasFilters: !!v.filters?.length, hasAmbassadors: !!v.ambassadors?.list?.length } : null);
       if (v?.filters?.length) {
         const labels = getFilterLabels(v.filters);
         if (labels[0] && this.activeFilter() === 'All Ambassadors') {
@@ -282,38 +303,171 @@ export class Dashboard implements OnInit {
       }
       this.cdr.markForCheck();
     });
+    this.platformService.fetchPlatformData(slug);
 
-    this.platformService.ambassadorList$.subscribe((docs) => {
-      this.listDocs.set(docs);
-      this.cdr.markForCheck();
-    });
-    this.platformService.listHasNext.subscribe((v) => {
-      this.listHasNext.set(v);
-      this.cdr.markForCheck();
-    });
-    this.platformService.listLoading.subscribe((v) => {
-      this.listLoading.set(v);
-      this.cdr.markForCheck();
-    });
-
+    // Flow (2) User clicks Login or anywhere requiring auth → Auth0 (onLoginSignup / requireAuthAction).
     this.auth.isAuthenticated$.subscribe((authenticated) => {
       this.isAuthenticated.set(authenticated);
-      if (authenticated) {
-        this.platformService.fetchAmbassadorList(slug);
+      console.log('[Dashboard] isAuthenticated:', authenticated);
+      this.cdr.markForCheck();
+    });
+
+    // ─── Direct navigate / refresh: when user is already logged in (refId in localStorage), load home/list ───
+    this.auth.isAuthenticated$.pipe(filter(Boolean)).subscribe(() => {
+      const refId = getRefIdFromStorage();
+      console.log('[Dashboard] isAuthenticated=true, refId from storage:', refId ? `${refId.slice(0, 8)}...` : '(empty)');
+      if (refId) {
+        console.log('[Dashboard] Direct navigate/refresh: calling fetchAmbassadorList(1, false)');
+        this.fetchAmbassadorList(1, false);
       }
       this.cdr.markForCheck();
     });
 
-    this.platformService.fetchPlatformData(slug);
+    // ─── Flow (3) After Auth0 login: {{BaseUrl}}/ambassador-platform/:slug/prospect-profile/login ───
+    // If firstName and lastName exist → stay on dashboard. If either missing → open basic-info-modal.
+    this.auth.isAuthenticated$
+      .pipe(
+        filter(Boolean),
+        take(1),
+        switchMap(() =>
+          this.prospectProfileService.getProspectProfileLogin(slug)
+        )
+      )
+      .subscribe({
+        next: (res) => {
+          console.log('[Dashboard] prospect-profile/login response', res?.success, res?.info ? { refId: !!res.info.refId, needsBasicInfo: needsBasicInfo(res.info), shouldShowOnboarding: shouldShowOnboarding(res.info) } : null);
+          if (res.success && res.info) {
+            this.userProfilePicture.set(res.info.picture?.value ?? null);
+            const fields = res.info.basicDetails?.fields;
+            if (fields?.firstName?.value) this.userFirstName.set(fields.firstName.value);
+            if (fields?.lastName?.value) this.userLastName.set(fields.lastName.value);
+            if (res.info.refId) {
+              const stored: RefStorage = { _id: res.info.refId };
+              if (res.info.universityId) stored.universityId = res.info.universityId;
+              localStorage.setItem(REFID_KEY, JSON.stringify(stored));
+              console.log('[Dashboard] refId (and universityId) saved to localStorage');
+              // Call home/list after login whenever we have refId (basic info, onboarding, or direct dashboard).
+              this.fetchAmbassadorList(1, false);
+            }
+            if (needsBasicInfo(res.info)) {
+              console.log('[Dashboard] Opening basic info modal');
+              this.prospectProfileForModal.set(res.info);
+              this.showBasicInfoModal.set(true);
+              this.cdr.markForCheck();
+            } else if (shouldShowOnboarding(res.info)) {
+              console.log('[Dashboard] Opening onboarding step 2');
+              this.onboardingRefId.set(res.info.refId);
+              this.onboardingSlug.set(slug);
+              this.showOnboardingStep2.set(true);
+              this.cdr.markForCheck();
+            } else {
+              console.log('[Dashboard] Login handler: user on dashboard');
+              this.cdr.markForCheck();
+            }
+          }
+        },
+        error: (err) => {
+          console.warn('[Dashboard] prospect-profile/login error', err);
+          // Non-fatal: do not block dashboard; user can still use the app.
+        },
+      });
+  }
+
+  /** Back/close without submit: basic info is mandatory, so log out and return to login page. */
+  onBasicInfoClose(): void {
+    this.showBasicInfoModal.set(false);
+    this.prospectProfileForModal.set(null);
+    this.userProfilePicture.set(null);
+    this.userFirstName.set('');
+    this.userLastName.set('');
+    sessionStorage.removeItem('accessToken');
+    localStorage.removeItem('refId');
+    this.auth.logout({
+      logoutParams: {
+        returnTo: typeof window !== 'undefined' ? window.location.origin : '',
+      },
+    });
+  }
+
+  /** Close modal only (after successful submit); do not log out. */
+  private closeBasicInfoModalOnly(): void {
+    this.showBasicInfoModal.set(false);
+    this.prospectProfileForModal.set(null);
+  }
+
+  onBasicInfoSubmit(payload: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    countryCode: string;
+    country: string;
+    pictureFile?: File;
+  }): void {
+    const refId = this.prospectProfileForModal()?.refId;
+    if (!refId) return;
+    this.basicInfoSubmitting.set(true);
+    const body: SetupProfilePayload = {
+      type: 'setupProfile',
+      data: {
+        firstName: { value: payload.firstName },
+        lastName: { value: payload.lastName },
+        email: { value: payload.email },
+        phoneNumber: {
+          countryCode: payload.countryCode,
+          phoneNumber: payload.phoneNumber,
+          isMobile: true,
+          isVerified: true,
+        },
+        country: { value: payload.country },
+      },
+    };
+    const slug =
+      this.route.snapshot.paramMap.get('universitySlug') ??
+      environment.ambassadorPlatform?.defaultUniversitySlug ??
+      'pune-university';
+    this.prospectProfileService
+      .putSetupProfile(refId, body)
+      .pipe(
+        switchMap(() =>
+          payload.pictureFile
+            ? this.prospectProfileService.uploadProfilePicture(refId, payload.pictureFile)
+            : of({ success: true })
+        )
+      )
+      .subscribe({
+      next: () => {
+        this.userFirstName.set(payload.firstName);
+        this.userLastName.set(payload.lastName);
+        this.basicInfoSubmitting.set(false);
+        this.onboardingRefId.set(refId);
+        this.onboardingSlug.set(slug);
+        this.closeBasicInfoModalOnly();
+        this.showOnboardingStep2.set(true);
+        this.cdr.markForCheck();
+      },
+        error: () => {
+          this.basicInfoSubmitting.set(false);
+        },
+      });
+  }
+
+  onOnboardingComplete(): void {
+    console.log('[Dashboard] onOnboardingComplete: closing step 2, calling fetchAmbassadorList(1, false)');
+    this.showOnboardingStep2.set(false);
+    this.onboardingRefId.set('');
+    this.onboardingSlug.set('');
+    this.fetchAmbassadorList(1, false);
+    this.cdr.markForCheck();
+  }
+
+  /** Back from onboarding: logout and redirect to home (no direct access to dashboard). */
+  onOnboardingBack(): void {
+    this.logout();
   }
 
   onLoginSignup(e: Event): void {
     e.preventDefault();
-    this.auth.loginWithRedirect();
-  }
-
-  /** Pre-login: clicking anywhere on the dashboard redirects to Auth0 login */
-  onPageClickToLogin(): void {
     this.auth.loginWithRedirect();
   }
 
@@ -327,96 +481,306 @@ export class Dashboard implements OnInit {
     });
   }
 
-  setActiveFilter(filter: string): void {
-    this.requireAuthAction(() => {
-      this.activeFilter.set(filter);
-      if (filter === 'By Program') {
-        this.programModalVisible.set(true);
-        return;
-      }
-      if (filter === 'By Country') {
-        this.countryModalVisible.set(true);
-        return;
-      }
-      if (filter === 'All Ambassadors') {
-        this.platformService.setListParams({
-          pageIndex: 1,
-          search: undefined,
-          ambassadorType: undefined,
-          country: undefined,
-          program: undefined,
-          availableNow: undefined,
-        });
-        this.platformService.triggerListFetch();
-        this.displayedCount.set(4);
-      } else if (filter === 'Available Now') {
-        this.platformService.setListParams({ pageIndex: 1, availableNow: true });
-        this.platformService.triggerListFetch();
-        this.displayedCount.set(4);
-      } else if (filter === 'Students' || filter === 'Alumni' || filter === 'Staff') {
-        const map: Record<string, string> = { Students: 'STUDENT', Alumni: 'ALUMNI', Staff: 'STAFF' };
-        this.platformService.setListParams({ pageIndex: 1, ambassadorType: map[filter] });
-        this.platformService.triggerListFetch();
-        this.displayedCount.set(4);
-      }
+  /** Build home/list API params from current filter and search. */
+  private listParams(page: number): HomeListParams {
+    const filter = this.activeFilter()?.toLowerCase()?.trim();
+    let ambassadorType: 'STUDENT' | 'ALUMNI' | 'STAFF' | undefined;
+    switch (filter) {
+    case 'student':
+    case 'students':
+      ambassadorType = 'STUDENT';
+      break;
+    case 'alumni':
+      ambassadorType = 'ALUMNI';
+      break;
+    case 'staff':
+      ambassadorType = 'STAFF';
+      break;
+    default:
+      ambassadorType = undefined;
+  }
+
+  const country =
+    this.activeFilter() === 'By Country' ? (this.selectedCountry() ?? undefined) : undefined;
+  const program =
+    this.activeFilter() === 'By Program' ? (this.selectedProgram() ?? undefined) : undefined;
+
+  return {
+    pageIndex: page,
+    pageSize: 10,
+    search: this.searchQuery?.trim() || undefined,
+    ambassadorType,
+    country,
+    program,
+  };
+}
+
+
+  /** Fetch ambassador list from home/list API; replace (page 1) or append (next page). */
+  fetchAmbassadorList(page: number, append: boolean): void {
+    const slug = this.dashboardSlug();
+    const params = this.listParams(page);
+    console.log('[Dashboard] fetchAmbassadorList', { page, append, slug, params });
+    if (!slug) {
+      console.warn('[Dashboard] fetchAmbassadorList skipped: no slug');
+      return;
+    }
+    this.listLoading.set(true);
+    this.platformService.getHomeList(slug, params).subscribe({
+      next: (res) => {
+        this.listLoading.set(false);
+        if (res?.success && res.info) {
+          const docs = res.info.docs ?? [];
+          const mapped = docs.map(homeListDocToAmbassadorApi);
+          console.log('[Dashboard] home/list success', { docsCount: docs.length, totalDocs: res.info.totalDocs, page: res.info.page, hasNextPage: res.info.hasNextPage });
+          if (append) {
+            this.ambassadorListFromApi.update((prev) => [...prev, ...mapped]);
+          } else {
+            this.ambassadorListFromApi.set(mapped);
+          }
+          this.listPage.set(res.info.page ?? page);
+          this.listHasMore.set(!!res.info.hasNextPage);
+          this.listTotalDocs.set(res.info.totalDocs ?? 0);
+          if (append) {
+            this.displayedCount.update((c) =>
+              Math.min(c + 4, this.ambassadorListFromApi().length)
+            );
+          } else {
+            this.displayedCount.set(4);
+          }
+        } else {
+          console.log('[Dashboard] home/list response empty or not success', res);
+        }
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.listLoading.set(false);
+        console.warn('[Dashboard] home/list error', err);
+        this.cdr.markForCheck();
+      },
     });
   }
 
-  onSearch(): void {
+  /** Handle filter button: open By Country / By Program modal or set tab filter. */
+  onFilterClick(filter: string): void {
+    if (filter === 'By Country') {
+      this.requireAuthAction(() => this.openCountryFilter());
+      return;
+    }
+    if (filter === 'By Program') {
+      this.requireAuthAction(() => this.openProgramFilter());
+      return;
+    }
+    this.setActiveFilter(filter);
+  }
+
+  setActiveFilter(filter: string): void {
     this.requireAuthAction(() => {
-      this.platformService.setListParams({
-        pageIndex: 1,
-        search: this.searchQuery.trim() || undefined,
-      });
-      this.platformService.triggerListFetch();
-      this.displayedCount.set(4);
+      this.activeFilter.set(filter);
+      this.fetchAmbassadorList(1, false);
     });
+  }
+
+  openCountryFilter(): void {
+    const refId = getRefIdFromStorage();
+    if (!refId) {
+      console.warn('[Dashboard] openCountryFilter: no refId');
+      return;
+    }
+    this.showCountryFilterModal.set(true);
+    this.countryFilterLoading.set(true);
+    this.countryFilterItems.set([]);
+    this.countryFilterPage.set(1);
+    this.countryFilterHasMore.set(true);
+    this.prospectProfileService
+      .getReferenceFilter(refId, 'COUNTRY_NAME', 1, 10)
+      .subscribe({
+        next: (res) => {
+          this.countryFilterLoading.set(false);
+          if (res?.success && res.info?.docs) {
+            const items: FilterOption[] = res.info.docs.map((d) => ({
+              id: d._id,
+              label: d.name,
+            }));
+            this.countryFilterItems.set(items);
+            this.countryFilterHasMore.set(
+              res.info.hasNextPage ?? (res.info.page ?? 1) < (res.info.totalPages ?? 0)
+            );
+            const current = this.selectedCountry();
+            const ids = current
+              ? items.filter((i) => i.label === current).map((i) => i.id)
+              : [];
+            this.selectedCountryIds.set(ids);
+          }
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.countryFilterLoading.set(false);
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  onCountryFilterLoadMore(): void {
+    if (!this.countryFilterHasMore() || this.countryFilterLoadingMore()) return;
+    const refId = getRefIdFromStorage();
+    if (!refId) return;
+    const nextPage = this.countryFilterPage() + 1;
+    this.countryFilterLoadingMore.set(true);
+    this.prospectProfileService
+      .getReferenceFilter(refId, 'COUNTRY_NAME', nextPage, 10)
+      .subscribe({
+        next: (res) => {
+          this.countryFilterLoadingMore.set(false);
+          if (res?.success && res.info?.docs) {
+            const newItems: FilterOption[] = res.info.docs.map((d) => ({
+              id: d._id,
+              label: d.name,
+            }));
+            this.countryFilterItems.update((prev) => [...prev, ...newItems]);
+            this.countryFilterPage.set(res.info.page ?? nextPage);
+            this.countryFilterHasMore.set(
+              res.info.hasNextPage ?? (res.info.page ?? nextPage) < (res.info.totalPages ?? nextPage)
+            );
+          } else {
+            this.countryFilterHasMore.set(false);
+          }
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.countryFilterLoadingMore.set(false);
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  openProgramFilter(): void {
+    const refId = getRefIdFromStorage();
+    const universityId = getUniversityIdFromStorage();
+    this.showProgramFilterModal.set(true);
+    this.programFilterItems.set([]);
+    this.programFilterPage.set(1);
+    this.programFilterHasMore.set(true);
+    if (!refId) {
+      console.warn('[Dashboard] openProgramFilter: no refId');
+      this.programFilterLoading.set(false);
+      this.selectedProgramIds.set([]);
+      this.cdr.markForCheck();
+      return;
+    }
+    this.programFilterLoading.set(true);
+    const opts = universityId ? { universityIds: [universityId], textsearch: '' } : { textsearch: '' };
+    this.prospectProfileService
+      .getReferenceFilter(refId, 'PROGRAM_NAME', 1, 10, opts)
+      .subscribe({
+        next: (res) => {
+          this.programFilterLoading.set(false);
+          if (res?.success && res.info?.docs) {
+            const items: FilterOption[] = res.info.docs.map((d) => ({
+              id: d._id,
+              label: d.name,
+            }));
+            this.programFilterItems.set(items);
+            this.programFilterHasMore.set(
+              res.info.hasNextPage ?? (res.info.page ?? 1) < (res.info.totalPages ?? 0)
+            );
+            const current = this.selectedProgram();
+            const ids = current
+              ? items.filter((i) => i.label === current).map((i) => i.id)
+              : [];
+            this.selectedProgramIds.set(ids);
+          } else {
+            this.programFilterHasMore.set(false);
+          }
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.programFilterLoading.set(false);
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  onProgramFilterLoadMore(): void {
+    if (!this.programFilterHasMore() || this.programFilterLoadingMore()) return;
+    const refId = getRefIdFromStorage();
+    const universityId = getUniversityIdFromStorage();
+    if (!refId) return;
+    const nextPage = this.programFilterPage() + 1;
+    const opts = universityId ? { universityIds: [universityId], textsearch: '' } : { textsearch: '' };
+    this.programFilterLoadingMore.set(true);
+    this.prospectProfileService
+      .getReferenceFilter(refId, 'PROGRAM_NAME', nextPage, 10, opts)
+      .subscribe({
+        next: (res) => {
+          this.programFilterLoadingMore.set(false);
+          if (res?.success && res.info?.docs) {
+            const newItems: FilterOption[] = res.info.docs.map((d) => ({
+              id: d._id,
+              label: d.name,
+            }));
+            this.programFilterItems.update((prev) => [...prev, ...newItems]);
+            this.programFilterPage.set(res.info.page ?? nextPage);
+            this.programFilterHasMore.set(
+              res.info.hasNextPage ?? (res.info.page ?? nextPage) < (res.info.totalPages ?? nextPage)
+            );
+          } else {
+            this.programFilterHasMore.set(false);
+          }
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.programFilterLoadingMore.set(false);
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  onCountryFilterClose(): void {
+    this.showCountryFilterModal.set(false);
+  }
+
+  onCountryFilterApply(ids: string[]): void {
+    const items = this.countryFilterItems();
+    const name = ids.length > 0 ? items.find((i) => i.id === ids[0])?.label : undefined;
+    this.selectedCountry.set(name);
+    this.selectedCountryIds.set(ids);
+    this.activeFilter.set('By Country');
+    this.showCountryFilterModal.set(false);
+    this.fetchAmbassadorList(1, false);
+    this.cdr.markForCheck();
+  }
+
+  onProgramFilterClose(): void {
+    this.showProgramFilterModal.set(false);
+  }
+
+  onProgramFilterApply(ids: string[]): void {
+    const items = this.programFilterItems();
+    const name = ids.length > 0 ? items.find((i) => i.id === ids[0])?.label : undefined;
+    this.selectedProgram.set(name);
+    this.selectedProgramIds.set(ids);
+    this.activeFilter.set('By Program');
+    this.showProgramFilterModal.set(false);
+    this.fetchAmbassadorList(1, false);
+    this.cdr.markForCheck();
+  }
+
+  onSearch(): void {
+    this.requireAuthAction(() => this.fetchAmbassadorList(1, false));
   }
 
   showMore(e: Event): void {
     e.preventDefault();
     this.requireAuthAction(() => {
-      const total = this.ambassadors().length;
-      const current = this.displayedCount();
-      if (current < total) {
-        this.displayedCount.update((c) => Math.min(c + 4, total));
-      } else if (this.listHasNext()) {
-        this.platformService.loadNextPage();
-        this.displayedCount.update((c) => c + 4);
+      if (this.listHasMore()) {
+        this.fetchAmbassadorList(this.listPage() + 1, true);
+      } else {
+        this.displayedCount.update((c) =>
+          Math.min(c + 4, this.ambassadors().length)
+        );
       }
     });
-  }
-
-  onProgramModalApply(ids: string[]): void {
-    this.selectedPrograms.set(ids);
-    this.programModalVisible.set(false);
-    this.activeFilter.set('By Program');
-    this.platformService.setListParams({
-      pageIndex: 1,
-      program: ids[0],
-    });
-    this.platformService.triggerListFetch();
-    this.displayedCount.set(4);
-  }
-
-  onCountryModalApply(ids: string[]): void {
-    this.selectedCountries.set(ids);
-    this.countryModalVisible.set(false);
-    this.activeFilter.set('By Country');
-    this.platformService.setListParams({
-      pageIndex: 1,
-      country: ids[0],
-    });
-    this.platformService.triggerListFetch();
-    this.displayedCount.set(4);
-  }
-
-  closeProgramModal(): void {
-    this.programModalVisible.set(false);
-  }
-
-  closeCountryModal(): void {
-    this.countryModalVisible.set(false);
   }
 
   onCardClick(): void {
@@ -427,10 +791,15 @@ export class Dashboard implements OnInit {
     this.requireAuthAction();
   }
 
-  logout(e: Event): void {
-    e.preventDefault();
+  logout(e?: Event): void {
+    e?.preventDefault();
+    console.log('[Dashboard] logout: clearing token, refId and ambassador list');
     sessionStorage.removeItem('accessToken');
     localStorage.removeItem('refId');
+    this.userProfilePicture.set(null);
+    this.userFirstName.set('');
+    this.userLastName.set('');
+    this.ambassadorListFromApi.set([]);
     this.auth.logout({
       logoutParams: {
         returnTo: typeof window !== 'undefined' ? window.location.origin : '',
@@ -441,19 +810,13 @@ export class Dashboard implements OnInit {
   onRefresh(): void {
     this.requireAuthAction(() => {
       this.activeFilter.set('All Ambassadors');
-      this.selectedPrograms.set([]);
-      this.selectedCountries.set([]);
       this.searchQuery = '';
-      this.platformService.setListParams({
-        pageIndex: 1,
-        search: undefined,
-        ambassadorType: undefined,
-        country: undefined,
-        program: undefined,
-        availableNow: undefined,
-      });
-      this.platformService.triggerListFetch();
-      this.displayedCount.set(4);
+      this.selectedCountry.set(undefined);
+      this.selectedProgram.set(undefined);
+      this.selectedCountryIds.set([]);
+      this.selectedProgramIds.set([]);
+      this.fetchAmbassadorList(1, false);
+      this.cdr.markForCheck();
     });
   }
 }

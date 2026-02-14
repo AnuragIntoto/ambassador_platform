@@ -34,15 +34,6 @@ $small-regular: 400 12px / 1.2 $font-family;
   max-width: 1920px;
   margin: 0 auto;
   box-sizing: border-box;
-  position: relative;
-}
-
-/** Pre-login overlay: any click redirects to Auth0 login */
-.auth-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  cursor: pointer;
 }
 
 .loading-state {
@@ -140,6 +131,46 @@ $small-regular: 400 12px / 1.2 $font-family;
   }
 }
 
+/* Header profile picture: from login API (info.picture.value); shown only when authenticated */
+.header-profile-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.header-profile-picture {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.header-profile-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: $box-color;
+  border: 1px solid $stroke-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $light-icon-color;
+  font-size: 18px;
+
+  .pi-user {
+    font-size: 1.25rem;
+  }
+}
+
+.header-profile-initials {
+  font-family: Inter, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: $secondary-color;
+}
+
 /* IMAGE PLACEHOLDER - Chat Unselected.svg: 32x32 */
 .login-signup-link {
   display: flex;
@@ -160,6 +191,19 @@ $small-regular: 400 12px / 1.2 $font-family;
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Mobile-only: hidden on desktop */
+.powered-by-mobile {
+  display: none;
+}
+
+.header-mobile-section {
+  display: none;
+}
+
+.page-description-mobile {
+  display: none;
 }
 
 /* style_TNYUFV: 16px regular, Light Black */
@@ -330,17 +374,6 @@ $small-regular: 400 12px / 1.2 $font-family;
   margin-bottom: 40px;
 }
 
-.ambassadors-loading {
-  margin: 24px 0;
-}
-
-.no-ambassadors {
-  text-align: center;
-  font: $body-regular;
-  color: $text-light-color;
-  margin: 24px 0;
-}
-
 /* layout_75A9SU, H1 32 Bold */
 .section-title {
   font: $h1-bold;
@@ -350,6 +383,15 @@ $small-regular: 400 12px / 1.2 $font-family;
 
 .ambassadors-cards-container {
   margin-bottom: 40px;
+}
+
+.no-ambassadors-message {
+  margin: 0;
+  padding: 32px 16px;
+  text-align: center;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  color: #4a5565;
 }
 
 /* layout_JIF77Z: row gap 27px - 4 cards, card width 389.33 */
@@ -580,16 +622,20 @@ $small-regular: 400 12px / 1.2 $font-family;
 }
 
 /* layout_75A9SU: See More, Large 16 Bold, Secondary */
-/* Figma: See More - Large 16 Bold, Secondary Color */
 .see-more-link {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   margin: 0 auto 40px;
   font: $large-bold;
   color: $secondary-color;
   text-decoration: none;
   cursor: pointer;
+
+  i {
+    font-size: 16px;
+  }
 
   &:hover {
     opacity: 0.8;
@@ -692,29 +738,103 @@ $small-regular: 400 12px / 1.2 $font-family;
   line-height: 1.25;
 }
 
-/* ========== MOBILE - Figma 1-9231, width 412px ========== */
+/* ========== MOBILE - Figma 1-9526, width 412px ========== */
 @media (max-width: 768px) {
   .dashboard {
-    padding: 20px;
-    max-width: 412px;
+    padding: 20px !important;
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-bottom: max(40px, env(safe-area-inset-bottom));
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
     margin: 0 auto;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .dashboard-header {
     margin-bottom: 24px;
   }
 
+  /* Mobile: title + profile pic on same row (top bar) */
   .header-content {
-    flex-direction: column;
-    align-items: stretch;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
     gap: 12px;
+    flex-wrap: wrap;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.05);
   }
 
-  /* Top app bar: H6 18 Bold */
+  .header-left {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .header-right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    order: 2;
+  }
+
+  /* Profile pic / login: same row as title, right side */
+  .header-profile-wrap,
+  .header-profile-picture,
+  .header-profile-placeholder {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Hide Powered by inside header-right on mobile */
+  .powered-by-desktop {
+    display: none;
+  }
+
+  /* Hide description in header-left on mobile */
+  .page-description-desktop {
+    display: none;
+  }
+
+  /* Mobile section: Powered by + description (order per image) */
+  .header-mobile-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+    width: 100%;
+  }
+
+  .page-description-mobile {
+    display: block;
+    font: $body-regular;
+    font-size: 14px;
+    color: $text-light-color;
+    margin: 0;
+    max-width: 372px;
+  }
+
+  /* Powered by: separate row below header, right-aligned */
+  .powered-by-mobile {
+    display: flex !important;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .powered-by-mobile .logo-placeholder {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Top app bar: H6 18 Bold – Figma layout_SCDQ4S */
   .page-title {
     font: $h6-bold;
     font-size: 18px;
-    margin: 0;
+    margin: 0 0 12px 0;
   }
 
   .header-right {
@@ -742,24 +862,24 @@ $small-regular: 400 12px / 1.2 $font-family;
     max-width: 372px;
   }
 
-  /* layout_D3LE25: search 372x48, padding 12px 16px */
+  /* layout_D3LE25: search 372x48, padding 12px 16px – Figma shows input only, no Search button */
   .search-section {
     margin-bottom: 24px;
   }
 
   .search-bar-container {
     height: 48px;
-    flex-direction: column;
-    height: auto;
+    flex-direction: row;
+  }
+
+  .search-button-desktop {
+    display: none;
   }
 
   .search-bar-container ::ng-deep .p-inputgroup {
     height: 48px;
-  }
-
-  .search-button ::ng-deep .p-button {
-    height: 48px;
-    min-width: 100%;
+    flex: 1;
+    min-width: 0;
   }
 
   /* layout_PA9304: filters horizontal scroll, gap 8px */
@@ -779,8 +899,11 @@ $small-regular: 400 12px / 1.2 $font-family;
     min-width: max-content;
   }
 
+  /* Figma layout_AHOELZ: 8px padding, 8px border radius */
   .filter-button ::ng-deep .p-button {
-    padding: 12px 16px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
   }
 
   .section-title {

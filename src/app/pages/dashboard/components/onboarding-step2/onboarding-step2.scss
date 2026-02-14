@@ -1,0 +1,595 @@
+/* Pixel-perfect from Figma node 1-8946 (Create profile – Step 2/2). */
+
+.onboarding-step2 {
+  position: fixed;
+  inset: 0;
+  background-color: #f4f6f8; /* Box color */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.onboarding-step2-loading,
+.onboarding-step2-error {
+  margin: auto;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  color: #1c1c1c;
+}
+
+.onboarding-step2-error {
+  color: #c00;
+}
+
+/* Header: 64px height, row, align center, padding 0 24px 0 24px (adapted from 141px for smaller screens) */
+.onboarding-step2-header {
+  flex-shrink: 0;
+  width: 100%;
+  height: 64px;
+  padding: 0 24px 0 24px;
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.1), 0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+}
+
+.onboarding-step2-header-inner {
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.onboarding-step2-header-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+.onboarding-step2-back {
+  width: 32px;
+  height: 32px;
+  padding: 4px 4px 0 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.onboarding-step2-back-icon {
+  font-size: 18px;
+  line-height: 1;
+  color: #0a0a0a;
+}
+
+/* Step 2/2 – Inter 400 18px line-height 1.5556 #1C1C1C */
+.onboarding-step2-step-title {
+  margin: 0;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.5555555555555556em;
+  color: #1c1c1c;
+}
+
+.onboarding-step2-powered {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.onboarding-step2-powered-text {
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.2102272510528564em;
+  color: #7c7c7c; /* Light Black Color */
+}
+
+/* IMAGE PLACEHOLDER – logo 50x50 */
+.onboarding-step2-logo {
+  width: 50px;
+  height: 50px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #999;
+}
+
+/* Form card: scrollable content, max-height to fit viewport */
+.onboarding-step2-card {
+  width: 100%;
+  max-width: 520px;
+  margin: 24px 16px 32px;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.1), 0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+/* Scrollable area: thin light grey scrollbar like reference */
+.onboarding-step2-card-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 40px;
+  scrollbar-width: thin;
+  scrollbar-color: #c4c4c4 transparent;
+}
+
+.onboarding-step2-card-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.onboarding-step2-card-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.onboarding-step2-card-scroll::-webkit-scrollbar-thumb {
+  background-color: #c4c4c4;
+  border-radius: 4px;
+}
+
+.onboarding-step2-card-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #a0a0a0;
+}
+
+.onboarding-step2-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+  min-height: min-content;
+}
+
+/* Title: H1 32/H1 Bold #000000 */
+.onboarding-step2-title {
+  margin: 0;
+  width: 100%;
+  font-family: Inter, sans-serif;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1.2000000476837158em;
+  color: #000000;
+  text-align: left;
+}
+
+.onboarding-step2-description {
+  margin: 0 0 24px 0;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.onboarding-step2-question-desc {
+  margin: 0 0 8px 0;
+  font-family: Inter, sans-serif;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.onboarding-step2-input-error {
+  border-color: #c0392b !important;
+}
+
+.onboarding-step2-error-msg {
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  color: #c0392b;
+  margin-top: 2px;
+}
+
+.onboarding-step2-fields {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Each field: gap 4px between label and input */
+.onboarding-step2-field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Label: Large 16/Large Bold #000000 */
+.onboarding-step2-label {
+  font-family: Inter, sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.2000000476837158em;
+  color: #000000;
+  display: block;
+}
+
+/* Input / Select: Figma 1-9029 – 58px height, #FFF, border #C4C4C4, border-radius 14px, shadow */
+.onboarding-step2-input,
+.onboarding-step2-select {
+  width: 100%;
+  height: 58px;
+  padding: 12px 16px;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.25em;
+  color: #000000;
+  background-color: #ffffff;
+  border: 1px solid #c4c4c4;
+  border-radius: 14px;
+  box-sizing: border-box;
+  box-shadow: 0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom dropdown arrow – hide native, show chevron */
+.onboarding-step2-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23919191' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 20px 20px;
+  padding-right: 44px;
+}
+
+.onboarding-step2-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 16px;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.25em;
+  color: #000000;
+  background-color: #ffffff;
+  border: 1px solid #c4c4c4;
+  border-radius: 14px;
+  box-sizing: border-box;
+  box-shadow: 0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
+  resize: vertical;
+}
+
+/* Date input wrapper: calendar icon on right, whole area opens picker */
+.onboarding-step2-date-wrapper {
+  position: relative;
+  width: 100%;
+  display: block;
+  cursor: pointer;
+}
+
+.onboarding-step2-date-wrapper .onboarding-step2-input {
+  cursor: pointer;
+}
+
+.onboarding-step2-date-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  color: #919191;
+}
+
+.onboarding-step2-date-wrapper input {
+  padding-right: 44px;
+}
+
+/* Hide native date icon so our calendar icon is the only one visible; keep full area clickable */
+.onboarding-step2-date-wrapper input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+/* Checkbox group: Figma 1-9029 – row with 24x24 checkbox, gap 12px, Inter 14px */
+.onboarding-step2-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.onboarding-step2-checkbox-group-error {
+  padding: 8px;
+  border: 1px solid #c0392b;
+  border-radius: 8px;
+}
+
+.onboarding-step2-checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  line-height: 1.4285714285714286em;
+  color: #000000;
+  cursor: pointer;
+}
+
+.onboarding-step2-checkbox-option input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin: 0;
+  cursor: pointer;
+  background-color: #ffffff;
+  border: 1px solid #c4c4c4;
+  border-radius: 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-content: center;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.onboarding-step2-checkbox-option input:checked {
+  background-color: #02a3ca;
+  border-color: #02a3ca;
+}
+
+.onboarding-step2-checkbox-option input::before {
+  content: '';
+  width: 10px;
+  height: 6px;
+  border-left: 2px solid #02a3ca;
+  border-bottom: 2px solid #02a3ca;
+  transform: scale(0) rotate(-45deg);
+  margin-bottom: 3px;
+  transition: transform 0.15s;
+}
+
+.onboarding-step2-checkbox-option input:checked::before {
+  transform: scale(1) rotate(-45deg);
+  border-left-color: #ffffff;
+  border-bottom-color: #ffffff;
+}
+
+/* Marketing: Figma Frame 1707478837 – checkbox + label */
+.onboarding-step2-marketing {
+  width: 100%;
+}
+
+.onboarding-step2-marketing-label {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 4px;
+  cursor: pointer;
+}
+
+/* Marketing checkbox: initially white; when checked = solid teal with white check (like attached image) */
+.onboarding-step2-marketing-label input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  background-color: #ffffff;
+  border: 1px solid #c4c4c4;
+  border-radius: 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-content: center;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.onboarding-step2-marketing-label input:checked {
+  background-color: #02a3ca;
+  border-color: #02a3ca;
+}
+
+.onboarding-step2-marketing-label input::before {
+  content: '';
+  width: 10px;
+  height: 6px;
+  border-left: 2px solid #c4c4c4;
+  border-bottom: 2px solid #c4c4c4;
+  transform: scale(0) rotate(-45deg);
+  margin-bottom: 3px;
+  transition: transform 0.15s;
+}
+
+.onboarding-step2-marketing-label input:checked::before {
+  transform: scale(1) rotate(-45deg);
+  border-left-color: #ffffff;
+  border-bottom-color: #ffffff;
+}
+
+.onboarding-step2-marketing-text {
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.625em;
+  color: #364153;
+}
+
+.onboarding-step2-submit-error {
+  margin: 0;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  color: #c00;
+}
+
+.onboarding-step2-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  align-self: stretch;
+}
+
+/* Submit: padding 12px 154px, border-radius 8px, #02A3CA, text #FFFFFF, Large 16 Bold */
+.onboarding-step2-submit {
+  flex: 1;
+  height: auto;
+  padding: 12px 154px;
+  font-family: Inter, sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.2102272510528564em;
+  color: #ffffff;
+  background-color: #02a3ca;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.onboarding-step2-submit:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.onboarding-step2-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.onboarding-step2-skip {
+  padding: 12px 24px;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #02a3ca;
+  background: transparent;
+  border: 1px solid #02a3ca;
+  border-radius: 8px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.onboarding-step2-skip:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.onboarding-step2-skip:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Privacy: Inter 400 12px line-height 1.625 #4A5565, center */
+.onboarding-step2-privacy {
+  margin: 0;
+  width: 100%;
+  max-width: 520px;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.625em;
+  color: #4a5565;
+  text-align: center;
+}
+
+.onboarding-step2-privacy-link {
+  color: #02a3ca;
+  text-decoration: none;
+}
+
+.onboarding-step2-privacy-link:hover {
+  text-decoration: underline;
+}
+
+/* Tablet: 768px and below */
+@media (max-width: 768px) {
+  .onboarding-step2-card {
+    margin: 16px 16px 24px;
+  }
+
+  .onboarding-step2-card-scroll {
+    padding: 28px 24px;
+  }
+
+  .onboarding-step2-title {
+    font-size: 26px;
+  }
+
+  .onboarding-step2-fields {
+    gap: 24px;
+  }
+
+  .onboarding-step2-actions {
+    flex-direction: column;
+  }
+
+  .onboarding-step2-submit {
+    width: 100%;
+    padding: 12px 24px;
+  }
+
+  .onboarding-step2-skip {
+    width: 100%;
+  }
+}
+
+/* Mobile: 480px and below */
+@media (max-width: 480px) {
+  .onboarding-step2-header {
+    padding: 0 16px;
+  }
+
+  .onboarding-step2-step-title {
+    font-size: 16px;
+  }
+
+  .onboarding-step2-card {
+    margin: 12px 12px 20px;
+    border-radius: 12px;
+  }
+
+  .onboarding-step2-card-scroll {
+    padding: 20px 16px;
+  }
+
+  .onboarding-step2-title {
+    font-size: 22px;
+  }
+
+  .onboarding-step2-fields {
+    gap: 20px;
+  }
+
+  .onboarding-step2-input,
+  .onboarding-step2-select {
+    height: 52px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .onboarding-step2-label {
+    font-size: 15px;
+  }
+
+  .onboarding-step2-marketing-text {
+    font-size: 13px;
+  }
+
+  .onboarding-step2-privacy {
+    font-size: 11px;
+  }
+}

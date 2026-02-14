@@ -3,14 +3,7 @@ import { inject } from '@angular/core';
 import { AuthService } from '@auth0/auth0-angular';
 import { catchError, switchMap, take } from 'rxjs';
 
-/** Home API only - public, no auth. List API (/api/.../home/list) requires auth. */
-const NO_AUTH_URL_PATTERN = /\/ambassador-platform\/[^/]+\/home$/;
-
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  if (NO_AUTH_URL_PATTERN.test(req.url)) {
-    return next(req);
-  }
-
   const auth = inject(AuthService);
 
   return auth.isAuthenticated$.pipe(

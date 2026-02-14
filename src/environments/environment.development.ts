@@ -1,9 +1,9 @@
 export const environment = {
   production: true,
   apiUri: 'https://dev.intoto.ca',
+  prospectProfileApiUri: 'https://dev.intoto.ca/api',
   s3BaseUrl: 'https://dev.cdn.intoto.ca/',
   ambassadorPlatform: {
-    refId: '68175f0b56147e83225f3a31',
     defaultUniversitySlug: 'pune-university',
   },
   auth: {
@@ -18,13 +18,6 @@ export const environment = {
     errorPath: '/error',
   },
   httpInterceptor: {
-    allowedList: [
-      'https://dev.intoto.ca/api/user/*',
-      'https://dev.intoto.ca/api/portfolio*',
-      'https://dev.intoto.ca/api/dashboard*',
-      'https://dev.intoto.ca/api/invitation/*',
-      'https://dev.intoto.ca/api/countries*',
-      'https://dev.intoto.ca/api/ambassador-platform/*',
-    ],
+    allowedList: ['https://dev.intoto.ca/*'],
   },
 };

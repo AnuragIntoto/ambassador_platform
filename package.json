@@ -32,6 +32,7 @@
     "@auth0/auth0-angular": "^2.5.0",
     "@primeng/themes": "^21.0.4",
     "@primeuix/themes": "^2.0.3",
+    "ngx-infinite-scroll": "^21.0.0",
     "primeicons": "^7.0.0",
     "primeng": "^21.1.1",
     "rxjs": "~7.8.0",

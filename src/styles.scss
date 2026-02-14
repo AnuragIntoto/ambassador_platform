@@ -7,3 +7,215 @@ body {
 @import url(../src/assets/scss/common.scss);
 @import url(../src/assets/scss/prime-ng.scss);
 @import "primeicons/primeicons.css";
+
+/* Filter modal (By Country / By Program) – light theme so it matches Figma when dialog is in overlay */
+.filter-modal-dialog.p-dialog .p-dialog,
+.p-dialog.filter-modal-dialog .p-dialog,
+.p-dialog.filter-modal-dialog {
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  border: 0.8px solid #c4c4c4 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  overflow: hidden !important;
+}
+.filter-modal-dialog .p-dialog-header,
+.p-dialog.filter-modal-dialog .p-dialog-header {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-bottom: 0.8px solid #c4c4c4 !important;
+}
+.filter-modal-dialog .p-dialog-title,
+.p-dialog.filter-modal-dialog .p-dialog-title {
+  color: #000000 !important;
+  font-weight: 700 !important;
+  font-size: 20px !important;
+  font-family: Inter, system-ui, sans-serif !important;
+}
+.filter-modal-dialog .p-dialog-content,
+.p-dialog.filter-modal-dialog .p-dialog-content {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+.filter-modal-dialog .p-dialog-footer,
+.p-dialog.filter-modal-dialog .p-dialog-footer {
+  background: #ffffff !important;
+}
+.filter-modal-dialog .filter-option-label,
+.filter-modal-dialog .filter-modal-option,
+.filter-modal-dialog .filter-modal-option span,
+.p-dialog.filter-modal-dialog .filter-option-label,
+.p-dialog.filter-modal-dialog .filter-modal-option,
+.p-dialog.filter-modal-dialog .filter-modal-option span,
+.p-dialog.filter-modal-dialog .p-dialog-content,
+.p-dialog.filter-modal-dialog .filter-modal-content {
+  color: #000000 !important;
+}
+/* Checkbox: white when unchecked; when checked PrimeNG adds .p-highlight on root */
+.filter-modal-dialog .p-checkbox .p-checkbox-box {
+  background: #ffffff !important;
+  border: 1px solid #c4c4c4 !important;
+}
+.filter-modal-dialog .p-checkbox.p-highlight .p-checkbox-box,
+.filter-modal-dialog .p-checkbox.p-checkbox-checked .p-checkbox-box {
+  background: #02A3CA !important;
+  border-color: #02A3CA !important;
+}
+.filter-modal-dialog .p-checkbox.p-highlight .p-checkbox-box .p-checkbox-icon,
+.filter-modal-dialog .p-checkbox.p-checkbox-checked .p-checkbox-box .p-checkbox-icon,
+.filter-modal-dialog .p-checkbox.p-highlight .p-checkbox-box .p-icon,
+.filter-modal-dialog .p-checkbox.p-highlight .p-checkbox-box svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+/* Scrollbar: light track, gray thumb (match Figma – not dark) */
+.filter-modal-dialog .p-dialog-content::-webkit-scrollbar,
+.filter-modal-dialog .filter-modal-list-scroll::-webkit-scrollbar {
+  width: 6px !important;
+}
+.filter-modal-dialog .p-dialog-content::-webkit-scrollbar-track,
+.filter-modal-dialog .filter-modal-list-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1 !important;
+}
+.filter-modal-dialog .p-dialog-content::-webkit-scrollbar-thumb,
+.filter-modal-dialog .filter-modal-list-scroll::-webkit-scrollbar-thumb {
+  background: #c4c4c4 !important;
+  border-radius: 3px !important;
+}
+.filter-modal-dialog .p-dialog-content::-webkit-scrollbar-thumb:hover,
+.filter-modal-dialog .filter-modal-list-scroll::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8 !important;
+}
+
+/* Ensure dialog has proper border-radius */
+.p-dialog-mask .p-dialog.filter-modal-dialog {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+
+/* Search: margin-top and focus border */
+.filter-modal-dialog .filter-modal-search {
+  margin-top: 16px !important;
+}
+.filter-modal-dialog .filter-modal-search .filter-search-input:focus,
+.filter-modal-dialog .filter-modal-search input:focus {
+  outline: none !important;
+  border-color: #02A3CA !important;
+}
+
+/* Search icon inside input (filter-search-wrapper) */
+.filter-modal-dialog .filter-search-icon {
+  position: absolute !important;
+  left: 16px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 1 !important;
+  color: #7c7c7c !important;
+}
+/* Footer section: rounded bottom, clear separation */
+.filter-modal-dialog .p-dialog-footer {
+  border-radius: 0 0 16px 16px !important;
+  box-shadow: 0 -3px 4px 0 rgba(0, 0, 0, 0.05) !important;
+  padding: 24px !important;
+}
+
+/* Clear All – default: white bg, gray border (no filter applied) */
+.filter-modal-dialog .filter-modal-footer .clear-all-wrapper .p-button,
+.filter-modal-dialog .filter-modal-footer .clear-all-wrapper .p-button .p-button,
+.filter-modal-dialog .filter-modal-footer .clear-all-wrapper .p-button button {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border: 1.6px solid #c4c4c4 !important;
+  color: rgba(0, 0, 0, 0.7) !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  border-radius: 8px !important;
+  padding: 13px 24px !important;
+}
+.filter-modal-dialog .filter-modal-footer .clear-all-wrapper .p-button:hover,
+.filter-modal-dialog .filter-modal-footer .clear-all-wrapper .p-button:hover button {
+  background: #f9fafb !important;
+  background-color: #f9fafb !important;
+  color: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Clear All when filter applied: teal bg */
+.filter-modal-dialog .filter-modal-footer .clear-all-wrapper.clear-all-applied .p-button,
+.filter-modal-dialog .filter-modal-footer .clear-all-wrapper.clear-all-applied .p-button .p-button,
+.filter-modal-dialog .filter-modal-footer .clear-all-wrapper.clear-all-applied .p-button button {
+  background: #02A3CA !important;
+  background-color: #02A3CA !important;
+  border-color: #02A3CA !important;
+  color: #ffffff !important;
+}
+.filter-modal-dialog .filter-modal-footer .clear-all-wrapper.clear-all-applied .p-button:hover,
+.filter-modal-dialog .filter-modal-footer .clear-all-wrapper.clear-all-applied .p-button:hover button {
+  background: #02A3CA !important;
+  background-color: #02A3CA !important;
+  color: #ffffff !important;
+}
+
+/* Apply Filters – layout/sizing */
+.filter-modal-dialog .filter-modal-footer .p-button:last-child,
+.filter-modal-dialog .filter-modal-footer .p-button:last-child .p-button,
+.filter-modal-dialog .filter-modal-footer .p-button:last-child button {
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  border-radius: 8px !important;
+  min-width: 224px !important;
+  padding: 13px 24px !important;
+}
+
+.filter-modal-dialog .filter-modal-footer .btn-applyFilter,
+.filter-modal-dialog .filter-modal-footer .btn-applyFilter .p-button,
+.filter-modal-dialog .filter-modal-footer .btn-applyFilter button {
+  background-color: #02A3CA !important;
+  background: #02A3CA !important;
+  color: #ffffff !important;
+}
+
+/* Filter modal – mobile full-screen (Figma 412px viewport) */
+@media (max-width: 600px) {
+  .p-dialog-mask .p-dialog.filter-modal-dialog {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+
+  .filter-modal-dialog .p-dialog-header {
+    padding: 16px 20px !important;
+  }
+
+  .filter-modal-dialog .p-dialog-content {
+    padding: 16px 20px !important;
+    max-height: none !important;
+  }
+
+  .filter-modal-dialog .p-dialog-footer {
+    padding: 16px 20px 24px !important;
+  }
+
+  .filter-modal-dialog .filter-modal-footer {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .filter-modal-dialog .filter-modal-footer .clear-all-wrapper {
+    width: 100% !important;
+  }
+
+  .filter-modal-dialog .filter-modal-footer .p-button,
+  .filter-modal-dialog .filter-modal-footer .p-button .p-button,
+  .filter-modal-dialog .filter-modal-footer .btn-applyFilter,
+  .filter-modal-dialog .filter-modal-footer .btn-applyFilter .p-button,
+  .filter-modal-dialog .filter-modal-footer .btn-applyFilter button {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+}

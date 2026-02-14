@@ -1,24 +1,25 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpBackend, HttpHeaders } from '@angular/common/http';
-import {
-  BehaviorSubject,
-  Observable,
-  tap,
-  catchError,
-  of,
-  switchMap,
-  debounceTime,
-} from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable, tap, catchError, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { AuthService } from '@auth0/auth0-angular';
 import { environment } from '../../../../environments/environment';
 import type {
   AmbassadorPlatformApiResponse,
   AmbassadorPlatformInfo,
-  AmbassadorListParams,
-  AmbassadorListResponse,
-  AmbassadorListDoc,
+  HomeListParams,
+  HomeListResponse,
 } from '../../models/ambassador-platform.model';
 
 const REFID_KEY = 'refId';
+/** BaseUrl2 for dashboard home: {{BaseUrl2}}/ambassador-platform/:slug/home */
+const HOME_API_BASE =
+  (environment as { ambassadorPlatformBaseUri?: string }).ambassadorPlatformBaseUri ??
+  environment.apiUri;
+/** Base for home/list (Bearer + refId): {{BaseUrl}}/ambassador-platform/:slug/home/list */
+const LIST_API_BASE =
+  (environment as { prospectProfileApiUri?: string }).prospectProfileApiUri ??
+  `${environment.apiUri}/api`;
 
 function getRefIdFromStorage(): string {
   try {
@@ -36,12 +37,12 @@ function getRefIdFromStorage(): string {
 })
 export class AmbassadorPlatformService {
   private readonly http = inject(HttpClient);
-  private readonly httpBackend = inject(HttpBackend);
-  private readonly httpNoAuth = new HttpClient(this.httpBackend);
-  private readonly apiBase = environment.apiUri;
-  /** refId from login flow (localStorage); falls back to environment for dev if set */
+  private readonly auth = inject(AuthService);
+  private readonly apiBase = HOME_API_BASE;
+  private readonly listApiBase = LIST_API_BASE;
+  /** refId from prospect-profile/login response (stored in localStorage); dynamic only. */
   private get refId(): string {
-    return getRefIdFromStorage() || (environment.ambassadorPlatform?.refId ?? '');
+    return getRefIdFromStorage();
   }
 
   private readonly data$ = new BehaviorSubject<AmbassadorPlatformInfo | null>(null);
@@ -78,7 +79,7 @@ export class AmbassadorPlatformService {
 
     const url = `${this.apiBase}/ambassador-platform/${universitySlug}/home`;
 
-    this.httpNoAuth
+    this.http
       .get<AmbassadorPlatformApiResponse>(url)
       .pipe(
         tap((res) => {
@@ -104,126 +105,54 @@ export class AmbassadorPlatformService {
     this.fetchTriggered = false;
     this.data$.next(null);
     this.error$.next(null);
-    this.listParams$.next(this.getDefaultListParams());
-    this.listDocs$.next([]);
-    this.listTotal$.next(0);
-    this.listHasNext$.next(false);
   }
 
-  // --- List API (filtered, paginated) ---
-  private readonly listParams$ = new BehaviorSubject<AmbassadorListParams>({
-    pageIndex: 1,
-    pageSize: 10,
-  });
-  private readonly listDocs$ = new BehaviorSubject<AmbassadorListDoc[]>([]);
-  private readonly listTotal$ = new BehaviorSubject<number>(0);
-  private readonly listHasNext$ = new BehaviorSubject<boolean>(false);
-  private readonly listLoading$ = new BehaviorSubject<boolean>(false);
-  private universitySlugForList = '';
-
-  private getDefaultListParams(): AmbassadorListParams {
-    return { pageIndex: 1, pageSize: 10 };
-  }
-
-  /** Ambassadors from list API */
-  get ambassadorList$(): Observable<AmbassadorListDoc[]> {
-    return this.listDocs$.asObservable();
-  }
-
-  get listTotal(): Observable<number> {
-    return this.listTotal$.asObservable();
-  }
-
-  get listHasNext(): Observable<boolean> {
-    return this.listHasNext$.asObservable();
-  }
-
-  get listLoading(): Observable<boolean> {
-    return this.listLoading$.asObservable();
-  }
-
-  /** Update list params (triggers fetch). Use for filters, search, reset. */
-  setListParams(params: Partial<AmbassadorListParams>): void {
-    const pageIndex = params.pageIndex ?? 1;
-    if (pageIndex === 1) {
-      this.listDocs$.next([]);
+  /**
+   * POST .../ambassador-platform/:slug/home/list with Bearer token and refId header.
+   * URL: query params pageIndex, pageSize. Body: optional search, ambassadorType, country, program, availableNow.
+   */
+  getHomeList(
+    universitySlug: string,
+    params: HomeListParams = {}
+  ): Observable<HomeListResponse | null> {
+    const refId = this.refId;
+    if (!refId) {
+      console.warn('[AmbassadorPlatformService] getHomeList: refId missing, skipping request');
+      return of(null);
     }
-    this.listParams$.next({
-      ...this.listParams$.value,
-      ...params,
-      pageIndex,
-    });
-  }
-
-  /** Append next page (See More) */
-  loadNextPage(): void {
-    const v = this.listParams$.value;
-    if (this.listHasNext$.value) {
-      this.listParams$.next({
-        ...v,
-        pageIndex: v.pageIndex + 1,
-      });
-    }
-  }
-
-  /** Fetch ambassador list - called when params change. Uses RxJS to minimize API calls. */
-  fetchAmbassadorList(slug: string): void {
-    this.universitySlugForList = slug;
-    this.listParams$
-      .pipe(
-        debounceTime(150),
-        switchMap((params) => {
-          this.listLoading$.next(true);
-          const q = new URLSearchParams();
-          q.set('pageIndex', String(params.pageIndex));
-          q.set('pageSize', String(params.pageSize));
-          const url = `${this.apiBase}/api/ambassador-platform/${slug}/home/list?${q}`;
-          const headerDict: Record<string, string> = {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache',
-          };
-          if (this.refId) headerDict['refId'] = this.refId;
-          const headers = new HttpHeaders(headerDict);
-          const body: Record<string, string | boolean> = {};
-          if (params.search) body['search'] = params.search;
-          if (params.ambassadorType) body['ambassadorType'] = params.ambassadorType;
-          if (params.country) body['country'] = params.country;
-          if (params.program) body['program'] = params.program;
-          if (params.availableNow != null) body['availableNow'] = params.availableNow;
-
-          return this.http.request<AmbassadorListResponse>('GET', url, { headers, body }).pipe(
-            tap((res) => {
-              this.listLoading$.next(false);
-              if (res.success && res.info) {
-                const docs = res.info.docs ?? [];
-                const append = params.pageIndex > 1;
-                this.listDocs$.next(
-                  append ? [...this.listDocs$.value, ...docs] : docs
-                );
-                this.listTotal$.next(res.info.totalDocs ?? 0);
-                this.listHasNext$.next(res.info.hasNextPage ?? false);
-              }
-            }),
-            catchError((err) => {
-              this.listLoading$.next(false);
-              this.error$.next(err?.message ?? 'Failed to load ambassadors');
-              return of({
-              success: false,
-              statusCode: 500,
-              info: { docs: [], totalDocs: 0, limit: 0, page: 1, totalPages: 0, hasNextPage: false, hasPrevPage: false, nextPage: null, prevPage: null },
-            } as AmbassadorListResponse);
-            })
-          );
-        }),
-      )
-      .subscribe();
-  }
-
-  /** Trigger initial list fetch (call after setListParams or when slug is ready) */
-  triggerListFetch(): void {
-    if (this.universitySlugForList) {
-      this.listParams$.next({ ...this.listParams$.value });
-    }
+    const {
+      pageIndex = 1,
+      pageSize = 10,
+      search,
+      ambassadorType,
+      country,
+      program,
+      availableNow,
+    } = params;
+    const query = new URLSearchParams();
+    query.set('pageIndex', String(pageIndex));
+    query.set('pageSize', String(pageSize));
+    const url = `${this.listApiBase}/ambassador-platform/${universitySlug}/home/list?${query.toString()}`;
+    const body: Record<string, string | number | boolean | undefined> = {};
+    if (search != null && search !== '') body['search'] = search;
+    if (ambassadorType) body['ambassadorType'] = ambassadorType;
+    if (country) body['country'] = country;
+    if (program) body['program'] = program;
+    if (availableNow != null) body['availableNow'] = availableNow;
+    console.log('[AmbassadorPlatformService] getHomeList: POST', url, { body, refId: refId.slice(0, 8) + '...' });
+    return this.auth.getAccessTokenSilently().pipe(
+      switchMap((token) => {
+        const headers = new HttpHeaders({
+          Authorization: `Bearer ${token}`,
+          refId,
+          'Content-Type': 'application/json',
+        });
+        return this.http.post<HomeListResponse>(url, body, { headers });
+      }),
+      catchError((err) => {
+        console.warn('[AmbassadorPlatformService] getHomeList error', err);
+        return of(null);
+      })
+    );
   }
 }

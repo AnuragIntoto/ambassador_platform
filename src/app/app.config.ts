@@ -7,7 +7,6 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { authInterceptor } from './core/interceptor/auth-interceptor';
-import { errorInterceptor } from './core/interceptor/error-interceptor';
 import { AuthModule } from '@auth0/auth0-angular';
 import { environment } from '../environments/environment';
 import { MessageService } from 'primeng/api';
@@ -18,7 +17,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor])),
     providePrimeNG({ theme: { preset: Aura } }),
     importProvidersFrom(
       AuthModule.forRoot({

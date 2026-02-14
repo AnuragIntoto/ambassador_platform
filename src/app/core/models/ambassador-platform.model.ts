@@ -27,13 +27,6 @@ export interface Header {
   message: string;
 }
 
-/** Ambassador type from API */
-export interface AmbassadorTypeRef {
-  _id: string;
-  name: string;
-  displayName: string;
-}
-
 export interface AmbassadorsSection {
   title: string;
   list: AmbassadorApi[];
@@ -51,7 +44,8 @@ export interface AmbassadorApi {
   clubsAndSocieties: string[];
   country: string;
   languages: string[];
-  ambassadorType?: AmbassadorTypeRef;
+  /** e.g. "STUDENT", "ALUMNI" from home/list API */
+  ambassadorType?: string;
 }
 
 export interface AcademicYear {
@@ -74,21 +68,21 @@ export interface FaqApi {
   viewCount: number;
 }
 
-/** List API - request query params */
-export interface AmbassadorListParams {
-  pageIndex: number;
-  pageSize: number;
+/** Query params / body for GET .../home/list */
+export interface HomeListParams {
+  pageIndex?: number;
+  pageSize?: number;
   search?: string;
-  ambassadorType?: string;
+  ambassadorType?: 'STUDENT' | 'ALUMNI' | 'STAFF';
   country?: string;
   program?: string;
   availableNow?: boolean;
 }
 
-/** List API - doc structure */
-export interface AmbassadorListDoc {
+/** Single doc from home/list API response (info.docs[]) */
+export interface HomeListDoc {
   _id: string;
-  slug: string;
+  slug?: string;
   basicInfo?: {
     firstName?: { value?: string };
     lastName?: { value?: string };
@@ -98,26 +92,47 @@ export interface AmbassadorListDoc {
   picture?: { value?: string };
   ambassadorInfo?: {
     about?: string;
-    favouritePrograms?: string[];
-    interest?: string[];
     academicYear?: AcademicYear;
-    ambassadorType?: AmbassadorTypeRef;
+    prevQualifications?: unknown;
+    favouritePrograms?: string[];
+    clubsAndSocieties?: string[];
+    interest?: string[];
+    ambassadorType?: { _id: string; name: string; displayName?: string };
   };
 }
 
-/** List API - response */
-export interface AmbassadorListResponse {
+export interface HomeListResponse {
   success: boolean;
   statusCode: number;
   info: {
-    docs: AmbassadorListDoc[];
+    docs: HomeListDoc[];
     totalDocs: number;
     limit: number;
     page: number;
     totalPages: number;
-    hasNextPage: boolean;
     hasPrevPage: boolean;
-    nextPage: number | null;
-    prevPage: number | null;
+    hasNextPage: boolean;
+  };
+}
+
+/** Map home/list doc to AmbassadorApi for reuse with existing card UI. */
+export function homeListDocToAmbassadorApi(doc: HomeListDoc): AmbassadorApi {
+  const first = doc.basicInfo?.firstName?.value ?? '';
+  const last = doc.basicInfo?.lastName?.value ?? '';
+  const name = [first, last].filter(Boolean).join(' ');
+  const typeName = doc.ambassadorInfo?.ambassadorType?.displayName ?? doc.ambassadorInfo?.ambassadorType?.name;
+  return {
+    _id: doc._id,
+    name,
+    picture: doc.picture?.value ?? '',
+    about: doc.ambassadorInfo?.about ?? '',
+    slug: doc.slug ?? '',
+    academicYear: doc.ambassadorInfo?.academicYear ?? { university: '', campus: '', startYear: 0, endYear: 0 },
+    interests: doc.ambassadorInfo?.interest ?? [],
+    favouritePrograms: doc.ambassadorInfo?.favouritePrograms ?? [],
+    clubsAndSocieties: doc.ambassadorInfo?.clubsAndSocieties ?? [],
+    country: doc.basicInfo?.country?.value ?? '',
+    languages: doc.basicInfo?.languages?.value ?? [],
+    ambassadorType: typeName ?? undefined,
   };
 }

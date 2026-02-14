@@ -1,14 +1,12 @@
+@if (showOnboardingStep2()) {
+  <app-onboarding-step2
+    [universitySlug]="onboardingSlug()"
+    [refId]="onboardingRefId()"
+    (complete)="onOnboardingComplete()"
+    (back)="onOnboardingBack()"
+  />
+} @else {
 <div class="dashboard">
-  @if (platformData() && !isAuthenticated()) {
-    <div
-      class="auth-overlay"
-      (click)="onPageClickToLogin()"
-      role="button"
-      tabindex="0"
-      (keydown.enter)="onPageClickToLogin()"
-      aria-label="Click anywhere to sign in"
-    ></div>
-  }
   @if (loading()) {
     <div class="loading-state">
       <app-loader />
@@ -22,14 +20,26 @@
       <div class="header-content">
         <div class="header-left">
           <h1 class="page-title">{{ header()?.title ?? 'Student Ambassadors' }}</h1>
-          <p class="page-description">{{ header()?.message ?? '' }}</p>
+          <p class="page-description page-description-desktop">{{ header()?.message ?? '' }}</p>
         </div>
         <div class="header-right">
           <a href="#" class="chat-icon-link" aria-label="Chat" (click)="requireAuthAction(); $event.preventDefault()">
-            <!-- IMAGE PLACEHOLDER - Chat Unselected.svg 32x32, replace with actual asset -->
             <img src="../../../assets/icons/roles/Chat Unselected.svg" alt="Chat" />
           </a>
           @if (isAuthenticated()) {
+            <div class="header-profile-wrap">
+              @if (userProfilePicture(); as pictureUrl) {
+                <img [src]="pictureUrl" alt="Profile" class="header-profile-picture" />
+              } @else if (userDisplayName()) {
+                <div class="header-profile-placeholder header-profile-initials" aria-hidden="true">
+                  {{ getInitials(userDisplayName()) }}
+                </div>
+              } @else {
+                <div class="header-profile-placeholder" aria-hidden="true">
+                  <i class="pi pi-user"></i>
+                </div>
+              }
+            </div>
             <a href="#" class="login-signup-link" (click)="logout($event)">
               <span>Logout</span>
             </a>
@@ -38,16 +48,19 @@
               <span>Login / Signup</span>
             </a>
           }
-          <div class="powered-by">
+          <div class="powered-by powered-by-desktop">
             <span class="powered-by-text">Powered by</span>
-            <!-- @if (university()?.logo) {
-              <img class="logo-placeholder" [src]="university()!.logo" alt="University logo" />
-            } @else { -->
-              <!-- IMAGE PLACEHOLDER - logo 50x50, replace with actual asset -->
-              <img class="logo-placeholder" src="../../../assets/images/intoto logo.png" alt="Powered by" />
-            <!-- } -->
+            <img class="logo-placeholder" src="../../../assets/images/intoto logo.png" alt="Powered by" />
           </div>
         </div>
+      </div>
+      <!-- Mobile: Powered by on separate row below header, right-aligned; description below -->
+      <div class="header-mobile-section">
+        <div class="powered-by powered-by-mobile">
+          <span class="powered-by-text">Powered by</span>
+          <img class="logo-placeholder" src="../../../assets/images/intoto logo.png" alt="Powered by" />
+        </div>
+        <p class="page-description page-description-mobile">{{ header()?.message ?? '' }}</p>
       </div>
     </header>
 
@@ -63,9 +76,10 @@
             [(ngModel)]="searchQuery"
             placeholder="Search ambassadors, programs, countries..."
             class="search-input"
+            (keyup.enter)="onSearch()"
           />
         </p-inputgroup>
-        <p-button label="Search" (click)="onSearch()" class="search-button" />
+        <p-button label="Search" (click)="onSearch()" class="search-button search-button-desktop" />
       </div>
 
       <div class="filters-container">
@@ -76,7 +90,7 @@
               [outlined]="activeFilter() !== filter"
               [text]="activeFilter() !== filter"
               [severity]="activeFilter() === filter ? 'primary' : 'secondary'"
-              (click)="setActiveFilter(filter)"
+              (click)="onFilterClick(filter)"
               class="filter-button"
               [ngClass]="{ 'filter-active': activeFilter() === filter }"
             />
@@ -92,15 +106,12 @@
     <!-- Ambassador Cards Section -->
     <section class="ambassadors-section">
       <h2 class="section-title">{{ ambassadorsSection()?.title ?? 'Chat with Our Ambassadors' }}</h2>
-      @if (listLoading() && ambassadors().length === 0) {
-        <div class="loading-state ambassadors-loading">
-          <app-loader />
-          <p class="loading-label">Loading ambassadors...</p>
-        </div>
-      } @else {
       <div class="ambassadors-cards-container">
-        <div class="ambassadors-cards-grid">
-          @for (ambassador of visibleAmbassadors(); track ambassador.id) {
+        @if (!listLoading() && ambassadors().length === 0) {
+          <p class="no-ambassadors-message">No ambassadors found.</p>
+        } @else {
+          <div class="ambassadors-cards-grid">
+            @for (ambassador of visibleAmbassadors(); track ambassador.id) {
             <div class="ambassador-card" (click)="onCardClick()">
               <div class="card-header">
                 <span class="status-text" [class.online]="ambassador.status === 'online'">{{
@@ -150,17 +161,17 @@
                 />
               </div>
             </div>
-          }
-        </div>
+            }
+          </div>
+        }
       </div>
-      @if (ambassadors().length === 0 && !listLoading()) {
-        <p class="no-ambassadors">No ambassadors found.</p>
+      @if (listLoading()) {
+        <p class="list-loading-label">Loading ambassadors...</p>
       }
-      @if (hasMoreAmbassadors()) {
+      @if (hasMoreAmbassadors() && !listLoading()) {
         <a href="#" class="see-more-link" (click)="showMore($event)">
-          See More
+          See More <i class="pi pi-chevron-down"></i>
         </a>
-      }
       }
     </section>
 
@@ -180,25 +191,41 @@
         }
       </p-accordion>
     </section>
-
-    <!-- Filter Modals -->
-    <app-filter-modal
-      [visible]="programModalVisible()"
-      [title]="'Filter by Program'"
-      [searchPlaceholder]="'Search programs...'"
-      [items]="programOptions"
-      [selectedIds]="selectedPrograms()"
-      (apply)="onProgramModalApply($event)"
-      (close)="closeProgramModal()"
-    />
-    <app-filter-modal
-      [visible]="countryModalVisible()"
-      [title]="'Filter by Country'"
-      [searchPlaceholder]="'Search countries...'"
-      [items]="countryOptions"
-      [selectedIds]="selectedCountries()"
-      (apply)="onCountryModalApply($event)"
-      (close)="closeCountryModal()"
-    />
   }
 </div>
+
+<!-- Basic Information popup: shown after Auth0 login when firstName or lastName is missing (prospect-profile/login). -->
+<app-basic-info-modal
+  [visible]="showBasicInfoModal()"
+  [profile]="prospectProfileForModal()"
+  [submitting]="basicInfoSubmitting()"
+  (close)="onBasicInfoClose()"
+  (submit)="onBasicInfoSubmit($event)"
+/>
+
+<!-- Filter by Country: options from reference/filter API (COUNTRY_NAME), infinite scroll. -->
+<app-filter-modal
+  [visible]="showCountryFilterModal()"
+  title="Filter by Country"
+  searchPlaceholder="Search countries..."
+  [items]="countryFilterItems()"
+  [selectedIds]="selectedCountryIds()"
+  [loadingMore]="countryFilterLoadingMore()"
+  (apply)="onCountryFilterApply($event)"
+  (close)="onCountryFilterClose()"
+  (loadMore)="onCountryFilterLoadMore()"
+/>
+
+<!-- Filter by Program: options from reference/filter API (PROGRAM_NAME + universityIds). -->
+<app-filter-modal
+  [visible]="showProgramFilterModal()"
+  title="Filter by Program"
+  searchPlaceholder="Search programs..."
+  [items]="programFilterItems()"
+  [selectedIds]="selectedProgramIds()"
+  [loadingMore]="programFilterLoadingMore()"
+  (apply)="onProgramFilterApply($event)"
+  (close)="onProgramFilterClose()"
+  (loadMore)="onProgramFilterLoadMore()"
+/>
+}

@@ -1,0 +1,247 @@
+@if (showModal()) {
+  <div
+    class="basic-info-backdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="basic-info-title"
+    (click)="onBackdropClick($event)"
+  >
+    <!-- Header: Top app bar – Figma layout_JILTT4 -->
+    <header class="basic-info-header">
+      <button
+        type="button"
+        class="basic-info-back"
+        aria-label="Go back"
+        (click)="onBack()"
+      >
+        <img class="basic-info-back-icon" src="../../../../../assets/icons/roles/back icon.svg" alt="">
+      </button>
+      <h1 id="basic-info-title" class="basic-info-heading">Basic Information</h1>
+    </header>
+
+    <!-- Form card: centered below header -->
+    <div class="basic-info-content">
+      <div class="basic-info-form-card">
+        <div class="basic-info-form-inner" (click)="closeDropdowns()">
+          <!-- Upload: desktop top-center; mobile per Figma 1-15912 -->
+          <input
+            #fileInput
+            type="file"
+            accept="image/*"
+            class="basic-info-file-input"
+            (change)="onFileSelected($event)"
+          />
+          <div
+            class="basic-info-upload-section"
+            role="button"
+            tabindex="0"
+            aria-label="Upload profile picture"
+            (click)="triggerFileInput()"
+            (keydown.enter)="triggerFileInput()"
+            (keydown.space)="triggerFileInput(); $event.preventDefault()"
+          >
+            <div class="basic-info-avatar-wrap">
+              @if (profilePictureUrl(); as src) {
+                <img [src]="src" alt="Profile" class="basic-info-avatar-img" />
+              } @else {
+                <div class="basic-info-avatar-placeholder" aria-hidden="true">
+                  <span class="basic-info-avatar-icon">&#9786;</span>
+                </div>
+              }
+              <div class="basic-info-avatar-camera" aria-hidden="true">
+                <span class="basic-info-camera-icon">&#128247;</span>
+              </div>
+            </div>
+            <span class="basic-info-upload-label">Upload Picture</span>
+          </div>
+
+          <!-- Fields: Figma Frame 1707478703 – column gap 24px -->
+          <div class="basic-info-fields">
+            <!-- First Name + Last Name row: gap 12px, each 309px -->
+            <div class="basic-info-row basic-info-row-name">
+              <div class="basic-info-field">
+                <label class="basic-info-label" for="basic-first">First Name*</label>
+                <input
+                  id="basic-first"
+                  type="text"
+                  class="basic-info-input"
+                  [class.basic-info-input-error]="validationErrors()['firstName']"
+                  [ngModel]="firstName()"
+                  (ngModelChange)="firstName.set($event); clearFieldError('firstName')"
+                  placeholder=""
+                />
+                @if (validationErrors()['firstName']) {
+                  <span class="basic-info-error">{{ validationErrors()['firstName'] }}</span>
+                }
+              </div>
+              <div class="basic-info-field">
+                <label class="basic-info-label" for="basic-last">Last Name*</label>
+                <input
+                  id="basic-last"
+                  type="text"
+                  class="basic-info-input"
+                  [class.basic-info-input-error]="validationErrors()['lastName']"
+                  [ngModel]="lastName()"
+                  (ngModelChange)="lastName.set($event); clearFieldError('lastName')"
+                  placeholder=""
+                />
+                @if (validationErrors()['lastName']) {
+                  <span class="basic-info-error">{{ validationErrors()['lastName'] }}</span>
+                }
+              </div>
+            </div>
+
+            <!-- Email ID: full width 630px -->
+            <div class="basic-info-field basic-info-field-full">
+              <label class="basic-info-label" for="basic-email">Email ID*</label>
+              <input
+                id="basic-email"
+                type="email"
+                class="basic-info-input"
+                [class.basic-info-input-error]="validationErrors()['email']"
+                [ngModel]="email()"
+                (ngModelChange)="email.set($event); clearFieldError('email')"
+                placeholder=""
+              />
+              @if (validationErrors()['email']) {
+                <span class="basic-info-error">{{ validationErrors()['email'] }}</span>
+              }
+            </div>
+
+            <!-- Phone Number: country code dropdown (reference structure + infiniteScroll) -->
+            <div class="basic-info-field basic-info-field-full">
+              <label class="basic-info-label" for="basic-phone">Phone Number*</label>
+              <div class="basic-info-phone-row">
+                <div #dropdownWrapper class="dropdown-wrapper-modal" (click)="$event.stopPropagation()">
+                  <input
+                    type="text"
+                    id="basic-phone-code"
+                    readonly
+                    [value]="countryCode()"
+                    (click)="togglePhoneOpen()"
+                    class="form-input dropdown-input-clickable basic-info-phone-code-input"
+                    [class.basic-info-input-error]="validationErrors()['phoneNumber']"
+                    placeholder="+1"
+                  />
+                  @if (phoneOpen()) {
+                    <div class="dropdown-container" [class.dropdown-open-above]="phoneDropdownAbove()">
+                      <input
+                        type="text"
+                        placeholder="Search country..."
+                        [ngModel]="phoneSearchTerm()"
+                        (ngModelChange)="phoneSearchTerm.set($event)"
+                        class="dropdown-search"
+                      />
+                      <div
+                        class="dropdown-list-scroll"
+                        infiniteScroll
+                        [infiniteScrollDistance]="2"
+                        [infiniteScrollThrottle]="300"
+                        (scrolled)="onPhoneScroll()"
+                        (scroll)="onPhoneScrollEvent($event)"
+                        [scrollWindow]="false"
+                        [infiniteScrollDisabled]="phoneLoadingMore() || !phoneHasMore()"
+                      >
+                        @for (opt of filteredPhoneCountryOptions(); track opt._id) {
+                          <div class="dropdown-item" (click)="selectPhoneCountry(opt)">
+                            {{ opt.dialCode }} {{ opt.name }}
+                          </div>
+                        }
+                        @if (phoneLoadingMore()) {
+                          <div class="dropdown-loading">Loading...</div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+                <input
+                  id="basic-phone"
+                  type="tel"
+                  class="basic-info-input basic-info-phone-input"
+                  [class.basic-info-input-error]="validationErrors()['phoneNumber']"
+                  [ngModel]="phoneNumber()"
+                  (ngModelChange)="phoneNumber.set($event); clearFieldError('phoneNumber')"
+                  placeholder="9870654321"
+                />
+              </div>
+              @if (validationErrors()['phoneNumber']) {
+                <span class="basic-info-error">{{ validationErrors()['phoneNumber'] }}</span>
+              }
+            </div>
+
+            <!-- Country: dropdown from API (reference structure + infiniteScroll) -->
+            <div class="basic-info-field basic-info-field-full">
+              <div #dropdownWrapper class="dropdown-wrapper-modal" (click)="$event.stopPropagation()">
+                <label class="basic-info-label" for="basic-country">Country <span class="required-mark">*</span></label>
+                <input
+                  type="text"
+                  id="basic-country"
+                  readonly
+                  [value]="country()"
+                  (click)="toggleCountryOpen()"
+                  class="form-input dropdown-input-clickable basic-info-select"
+                  [class.basic-info-input-error]="validationErrors()['country']"
+                  placeholder="Select country"
+                />
+                  @if (countryOpen()) {
+                  <div class="dropdown-container" [class.dropdown-open-above]="countryDropdownAbove()">
+                    <input
+                      type="text"
+                      placeholder="Search country..."
+                      [ngModel]="countrySearchTerm()"
+                      (ngModelChange)="countrySearchTerm.set($event)"
+                      class="dropdown-search"
+                    />
+                    <div
+                      class="dropdown-list-scroll"
+                      infiniteScroll
+                      [infiniteScrollDistance]="2"
+                      [infiniteScrollThrottle]="300"
+                      (scrolled)="onCountryScroll()"
+                      (scroll)="onCountryScrollEvent($event)"
+                      [scrollWindow]="false"
+                      [infiniteScrollDisabled]="countryLoadingMore() || !countryHasMore()"
+                    >
+                      @for (opt of filteredCountryOptions(); track opt._id) {
+                        <div class="dropdown-item" (click)="selectCountry(opt)">
+                          {{ opt.name }}
+                        </div>
+                      }
+                      @if (countryLoadingMore()) {
+                        <div class="dropdown-loading">Loading...</div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+              @if (validationErrors()['country']) {
+                <span class="basic-info-error">{{ validationErrors()['country'] }}</span>
+              }
+            </div>
+
+            <!-- Submit: desktop inline; mobile moved to fixed footer via CSS order -->
+            <button
+              type="button"
+              class="basic-info-submit basic-info-submit-inline"
+              (click)="onSubmit()"
+              [disabled]="isSubmitting() || submitting()"
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Mobile: fixed submit bar at bottom – Figma layout_PWTSFP -->
+    <div class="basic-info-submit-bar">
+      <button
+        type="button"
+        class="basic-info-submit basic-info-submit-fixed"
+        (click)="onSubmit()"
+        [disabled]="isSubmitting() || submitting()"
+      >
+        Submit
+      </button>
+    </div>
+  </div>
+}

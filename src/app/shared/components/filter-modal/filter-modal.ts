@@ -38,9 +38,13 @@ export class FilterModal {
   searchPlaceholder = input<string>('');
   items = input<FilterOption[]>([]);
   selectedIds = input<string[]>([]);
+  /** Show loading indicator at bottom when loading more (infinite scroll). */
+  loadingMore = input<boolean>(false);
 
   apply = output<string[]>();
   close = output<void>();
+  /** Emitted when user scrolls near bottom to load next page. */
+  loadMore = output<void>();
 
   search = signal('');
   selected = signal<Set<string>>(new Set());
@@ -51,6 +55,9 @@ export class FilterModal {
     if (!q) return list;
     return list.filter((i) => i.label.toLowerCase().includes(q));
   });
+
+  /** True when at least one option is selected (used to style Clear All with teal bg). */
+  hasSelection = computed(() => this.selected().size > 0);
 
   constructor() {
     effect(() => {
@@ -85,5 +92,13 @@ export class FilterModal {
 
   onApply(): void {
     this.apply.emit(Array.from(this.selected()));
+  }
+
+  onScroll(event: Event): void {
+    const el = event.target as HTMLElement;
+    if (!el || this.loadingMore()) return;
+    const threshold = 80;
+    const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
+    if (nearBottom) this.loadMore.emit();
   }
 }

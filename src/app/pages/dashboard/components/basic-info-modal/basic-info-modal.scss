@@ -1,0 +1,616 @@
+/* Pixel-perfect from Figma node 1-8870 (Create profile). No magic numbers. */
+
+/* Backdrop – full viewport, Figma Box color #F4F6F8 */
+.basic-info-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: #f4f6f8;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+/* Header: full width, stuck to top; arrow + text left with padding (not touching left edge) */
+.basic-info-header {
+  flex-shrink: 0;
+  width: 100%;
+  min-height: 64px;
+  padding: 0 24px 0 24px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  background-color: #ffffff;
+  box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.1),
+    0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+}
+
+/* Content: padding on all four sides; form card centered in page (does not touch Basic Information header) */
+.basic-info-content {
+  width: 100%;
+  max-width: 472px;
+  margin: 0 auto;
+  padding: 24px 24px 32px 24px;
+  box-sizing: border-box;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Back button – Figma 32x32, border-radius 26843500px (circle) */
+.basic-info-back {
+  width: 32px;
+  height: 32px;
+  padding: 4px 4px 0 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.basic-info-back-icon {
+  font-size: 18px;
+  line-height: 1;
+  color: #0a0a0a;
+}
+
+/* Heading – Figma style_DQ1WQX: Inter 400, 18px, line-height 1.5556em, #1C1C1C */
+.basic-info-heading {
+  margin: 0;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.5555555555555556em;
+  color: #1c1c1c;
+  width: 155.35px;
+  height: 28px;
+}
+
+/* Form card – even smaller: padding 24px, white, shadow, border-radius 12px */
+.basic-info-form-card {
+  width: 100%;
+  padding: 24px;
+  background-color: #ffffff;
+  box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.1),
+    0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  margin-top: 0;
+}
+
+/* Inner – 400px width, gap 18px */
+.basic-info-form-inner {
+  width: 400px;
+  max-width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+/* Hidden file input */
+.basic-info-file-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Upload section – avatar 64px, gap 8px */
+.basic-info-upload-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 64px;
+  cursor: pointer;
+}
+
+.basic-info-avatar-wrap {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+
+/* Existing profile image from API */
+.basic-info-avatar-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Avatar placeholder – grey circle when no image */
+.basic-info-avatar-placeholder {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #d9d9d9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.basic-info-avatar-icon {
+  width: 32px;
+  height: 32px;
+  color: #919191;
+  font-size: 26px;
+  line-height: 1;
+}
+
+/* Camera overlay – 24x24 at top-right of circle */
+.basic-info-avatar-camera {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  background-color: #02a3ca;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 2px 4px -2px rgba(0, 0, 0, 0.1),
+    0px 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.basic-info-camera-icon {
+  font-size: 12px;
+  color: #ffffff;
+}
+
+/* Upload label – #7C7C7C */
+.basic-info-upload-label {
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.5em;
+  color: #7c7c7c;
+}
+
+/* Fields container – gap 16px */
+.basic-info-fields {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-self: stretch;
+}
+
+/* First/Last name row – gap 8px */
+.basic-info-row-name {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+}
+
+.basic-info-row {
+  width: 100%;
+}
+
+/* Single field – 192px so two + gap fit in 400px */
+.basic-info-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 192px;
+  min-width: 0;
+}
+
+.basic-info-field-full {
+  width: 400px;
+  max-width: 100%;
+}
+
+/* Label – bold #000000 */
+.basic-info-label {
+  font-family: Inter, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2em;
+  color: #000000;
+  display: block;
+}
+
+/* Input – height 46px, padding 12px */
+.basic-info-input {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 12px;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.25em;
+  color: #000000;
+  background-color: #ffffff;
+  border: 1px solid #c4c4c4;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.basic-info-input::placeholder {
+  color: #7c7c7c;
+}
+
+.basic-info-input-error {
+  border-color: #c0392b !important;
+}
+
+.basic-info-error {
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  color: #c0392b;
+  margin-top: 2px;
+}
+
+/* Phone row – code input narrow, number input takes remaining space */
+.basic-info-phone-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+
+  .dropdown-wrapper-modal {
+    width: 96px;
+    min-width: 96px;
+    flex-shrink: 0;
+
+    /* Dropdown panel wider than input for readability; input stays 96px */
+    .dropdown-container {
+      width: 280px;
+      min-width: 280px;
+      right: auto;
+    }
+  }
+}
+
+/* Select – same look as input */
+.basic-info-select {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 12px;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.25em;
+  color: #000000;
+  background-color: #ffffff;
+  border: 1px solid #c4c4c4;
+  border-radius: 8px;
+  box-sizing: border-box;
+  cursor: pointer;
+  appearance: auto;
+}
+
+.basic-info-country-code-select {
+  width: 96px;
+  min-width: 96px;
+}
+
+/* Reference-style dropdown (dropdown-wrapper-modal + dropdown-container with infiniteScroll) */
+.dropdown-wrapper-modal {
+  position: relative;
+  width: 100%;
+
+  .dropdown-input-clickable {
+    cursor: pointer;
+    user-select: none;
+    width: 100%;
+    min-height: 46px;
+    padding: 12px 12px;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    color: #000000;
+    background: #ffffff;
+    border: 1px solid #c4c4c4;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+
+  .dropdown-container {
+    position: absolute;
+    color: #000000;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 220px !important;
+    max-height: 220px !important;
+    min-height: 220px !important;
+    overflow: hidden !important;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    box-sizing: border-box;
+
+    &.dropdown-open-above {
+      top: auto;
+      bottom: 100%;
+      margin-top: 4px;
+      margin-bottom: 0;
+    }
+
+    .dropdown-search {
+      flex-shrink: 0;
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      border-bottom: 1px solid #e0e0e0;
+      background: white;
+      font-size: 14px;
+      box-sizing: border-box;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    /* Fixed-height scrollable list - forces scrollbar when items exceed 176px */
+    .dropdown-list-scroll {
+      flex: 0 0 176px;
+      height: 176px !important;
+      min-height: 176px !important;
+      max-height: 176px !important;
+      overflow-y: scroll !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-color: #999 #f5f5f5;
+    }
+
+    .dropdown-item {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s ease;
+      border-bottom: 1px solid #f5f5f5;
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+    }
+
+    .dropdown-loading {
+      padding: 10px 14px;
+      text-align: center;
+      color: #666;
+      font-size: 13px;
+    }
+  }
+}
+
+.basic-info-phone-code-input {
+  width: 96px;
+  min-width: 96px;
+}
+
+.required-mark {
+  color: #c4c4c4;
+}
+
+/* Country code wrap (legacy) */
+.basic-info-country-code {
+  width: 96px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  background-color: #ffffff;
+  border: 1px solid #c4c4c4;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.basic-info-flag {
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.25em;
+  color: #000000;
+}
+
+.basic-info-chevron {
+  font-size: 12px;
+  color: #000000;
+  margin-left: auto;
+}
+
+.basic-info-phone-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Country dropdown lookalike */
+.basic-info-select-wrap {
+  width: 100%;
+  height: 46px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+  border: 1px solid #c4c4c4;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.basic-info-select-value {
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.25em;
+  color: #000000;
+}
+
+/* Submit – #02A3CA */
+.basic-info-submit {
+  align-self: stretch;
+  padding: 10px 20px;
+  font-family: Inter, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.25em;
+  color: #ffffff;
+  background-color: #02a3ca;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.basic-info-submit:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.basic-info-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mobile: fixed submit bar – hidden on desktop */
+.basic-info-submit-bar {
+  display: none;
+}
+
+/* ========== MOBILE – Figma 1-15912 (412×917) ========== */
+@media (max-width: 600px) {
+  .basic-info-backdrop {
+    padding-bottom: 0;
+  }
+
+  /* Top app bar: 64px, shadow 0px 4px 4px 0px rgba(0,0,0,0.05) */
+  .basic-info-header {
+    min-height: 64px;
+    padding: 0 20px;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.05);
+  }
+
+  .basic-info-back {
+    width: 24px;
+    height: 24px;
+  }
+
+  .basic-info-back-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .basic-info-heading {
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  /* Content: 16px padding */
+  .basic-info-content {
+    max-width: 100%;
+    padding: 16px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  /* Form card: 12px radius, shadow 0px 0px 14px -4px rgba(0,0,0,0.08) */
+  .basic-info-form-card {
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0px 0px 14px -4px rgba(0, 0, 0, 0.08);
+  }
+
+  .basic-info-form-inner {
+    width: 100%;
+    gap: 16px;
+  }
+
+  /* Fields: gap 20px */
+  .basic-info-fields {
+    gap: 20px;
+  }
+
+  /* Labels: Small 12 Bold */
+  .basic-info-label {
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  /* Hide inline submit on mobile */
+  .basic-info-submit-inline {
+    display: none;
+  }
+
+  /* Fixed submit bar at bottom */
+  .basic-info-submit-bar {
+    display: block;
+    position: sticky;
+    bottom: 0;
+    flex-shrink: 0;
+    padding: 16px;
+    background: #ffffff;
+    box-shadow: 0px -4px 6px 0px rgba(0, 0, 0, 0.04);
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  .basic-info-submit-fixed {
+    display: flex;
+    width: 100%;
+    padding: 12px 154px;
+    min-height: 48px;
+  }
+
+  /* Upload: 96×96 on mobile */
+  .basic-info-upload-section {
+    width: auto;
+  }
+
+  .basic-info-avatar-wrap {
+    width: 96px;
+    height: 96px;
+  }
+
+  .basic-info-avatar-img,
+  .basic-info-avatar-placeholder {
+    width: 96px;
+    height: 96px;
+  }
+
+  .basic-info-upload-label {
+    font-size: 14px;
+  }
+
+  /* Name row: stack vertically on very small screens */
+  .basic-info-row-name {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .basic-info-row-name .basic-info-field {
+    width: 100%;
+  }
+
+  .basic-info-field-full {
+    width: 100%;
+    max-width: 100%;
+  }
+}
